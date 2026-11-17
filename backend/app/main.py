@@ -9,18 +9,20 @@ from pathlib import Path
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from . import audio, config as C
-from .detector import ArtifactsMissing, Detector
+from .detector import ArtifactsMissing
+from .registry import Registry
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
-        app.state.detector = Detector()
+        app.state.registry = Registry()
         app.state.load_error = None
     except ArtifactsMissing as e:
-        app.state.detector, app.state.load_error = None, str(e)
+        app.state.registry, app.state.load_error = None, str(e)
     yield
 
 
@@ -32,14 +34,22 @@ app.add_middleware(CORSMiddleware,
                    allow_methods=["*"], allow_headers=["*"])
 
 
-def det() -> Detector:
-    d = app.state.detector
-    if d is None:
+def reg() -> Registry:
+    r = app.state.registry
+    if r is None:
         raise HTTPException(503, app.state.load_error)
-    return d
+    return r
 
 
-def _analyze_path(path: Path, name: str) -> dict:
+def detector(model_id: str | None):
+    try:
+        return reg().detector(model_id)
+    except KeyError:
+        raise HTTPException(404, f"Unknown model '{model_id}'.") from None
+
+
+def _analyze_path(path: Path, name: str, model_id: str | None) -> dict:
+    det = detector(model_id)                                  # fail fast on an unknown model
     try:
         y = audio.load_audio(path)
     except Exception as e:                                   # undecodable / not a real wav
@@ -48,26 +58,36 @@ def _analyze_path(path: Path, name: str) -> dict:
         raise HTTPException(400, f"Clip is too short (< {C.MIN_DURATION_S}s).")
     if len(y) / C.SR > C.MAX_DURATION_S:
         raise HTTPException(413, f"Clip is longer than {C.MAX_DURATION_S:.0f}s.")
-    return det().analyze(y, name)
+    return det.analyze(y, name)
 
 
 @app.get("/api/health")
 def health():
-    d = app.state.detector
-    return {"status": "ok" if d else "model_missing", "detail": app.state.load_error,
-            "threshold": d.threshold if d else None, "machine": d.eval["machine"] if d else None}
+    r = app.state.registry
+    return {"status": "ok" if r else "model_missing", "detail": app.state.load_error,
+            "models": len(r.entries) if r else 0, "default_model": r.default_id if r else None}
 
 
-@app.get("/api/model")
-def model_info():
-    """Training-time evaluation: ROC, score distributions, confusion matrix, loss curves."""
-    return det().model_info()
+@app.get("/api/models")
+def models():
+    """All available models with headline metrics."""
+    return {"default": reg().default_id, "models": reg().summaries()}
+
+
+@app.get("/api/models/{model_id}")
+def model_info(model_id: str):
+    """Evaluation for one model: ROC, score distributions, confusion matrix, loss curves."""
+    try:
+        return reg().entry(model_id)
+    except KeyError:
+        raise HTTPException(404, f"Unknown model '{model_id}'.") from None
 
 
 @app.post("/api/analyze")
-async def analyze(file: UploadFile = File(...)):
+async def analyze(file: UploadFile = File(...), model: str | None = None):
     if not (file.filename or "").lower().endswith((".wav", ".wave")):
         raise HTTPException(400, "Only .wav files are supported.")
+    detector(model)
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
         size = 0
         while chunk := await file.read(1 << 20):
@@ -77,28 +97,31 @@ async def analyze(file: UploadFile = File(...)):
                 raise HTTPException(413, f"File exceeds {C.MAX_UPLOAD_BYTES // 2**20} MB limit.")
             tmp.write(chunk)
     try:
-        return _analyze_path(Path(tmp.name), file.filename)
+        return await run_in_threadpool(_analyze_path, Path(tmp.name), file.filename, model)
     finally:
         Path(tmp.name).unlink(missing_ok=True)
 
 
 @app.get("/api/samples")
-def samples():
-    """Held-out test clips (never seen in training) for one-click demos."""
-    return [{k: s[k] for k in ("id", "label", "name", "group")} for s in det().samples]
+def samples(model: str | None = None):
+    """Held-out test clips (never seen in training) for the selected machine, for one-click demos."""
+    try:
+        return [{k: s[k] for k in ("id", "label", "name", "machine", "unit")} for s in reg().samples_for(model)]
+    except KeyError:
+        raise HTTPException(404, f"Unknown model '{model}'.") from None
 
 
 def _sample(i: int) -> dict:
-    for s in det().samples:
+    for s in reg().samples:
         if s["id"] == i:
             return s
     raise HTTPException(404, "Unknown sample.")
 
 
 @app.post("/api/analyze/sample/{sample_id}")
-def analyze_sample(sample_id: int):
+def analyze_sample(sample_id: int, model: str | None = None):
     s = _sample(sample_id)
-    return _analyze_path(s["path"], f"{s['group']}/{s['label']}/{s['name']}")
+    return _analyze_path(s["path"], f"{s['machine']}_{s['unit']}/{s['label']}/{s['name']}", model)
 
 
 @app.get("/api/samples/{sample_id}/audio")

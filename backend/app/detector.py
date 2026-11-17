@@ -27,34 +27,16 @@ class ArtifactsMissing(RuntimeError):
 
 
 class Detector:
-    def __init__(self, artifacts_dir: Path = C.ARTIFACTS_DIR):
-        d = Path(artifacts_dir)
-        for f in ("model.keras", "norm.json", "eval.json"):
-            if not (d / f).exists():
-                raise ArtifactsMissing(
-                    f"{d / f} not found - train first: python backend/train.py --data fan/id_02")
-        self.model = tf.keras.models.load_model(d / "model.keras", compile=False)
-        self.encoder = tf.keras.Model(self.model.input, self.model.get_layer("bottleneck").output)
-        norm = json.loads((d / "norm.json").read_text())
-        self.train_min, self.train_max = norm["train_min"], norm["train_max"]
-        self.eval = json.loads((d / "eval.json").read_text())
-        self.threshold: float = self.eval["threshold"]
-        self._val = np.sort(np.asarray(self.eval["scores"]["val"]))
-        self._lock = threading.Lock()          # keras predict is not re-entrant-safe
-        self.samples = self._load_samples(d / "samples.json")
+    """One trained conv-autoencoder + its normalisation range, threshold and reference statistics."""
 
-    # ------------------------------------------------------------------ samples
-    @staticmethod
-    def _load_samples(p: Path):
-        if not p.exists():
-            return []
-        out = []
-        for i, s in enumerate(json.loads(p.read_text())):
-            path = (C.PROJECT_DIR / s["path"]).resolve()
-            if path.is_file():
-                out.append({"id": i, "label": s["label"], "name": path.name, "group": path.parent.parent.name,
-                            "path": path})
-        return out
+    def __init__(self, model_path: Path, entry: dict):
+        self.entry = entry
+        self.model = tf.keras.models.load_model(model_path, compile=False)     # safe_mode stays on
+        self.encoder = tf.keras.Model(self.model.input, self.model.get_layer("bottleneck").output)
+        self.train_min, self.train_max = entry["norm"]["lo"], entry["norm"]["hi"]
+        self.threshold: float = entry["threshold"]
+        self._val = np.sort(np.asarray(entry["scores"]["val"]))
+        self._lock = threading.Lock()          # keras predict is not re-entrant-safe
 
     # ----------------------------------------------------------------- analysis
     def analyze(self, y: np.ndarray, filename: str) -> dict:
@@ -106,6 +88,7 @@ class Detector:
 
         return {
             "filename": filename,
+            "model": {"id": self.entry["id"], "label": self.entry["label"]},
             "metadata": {
                 "duration_s": round(duration, 3), "sample_rate": C.SR, "n_samples": int(len(y)),
                 "peak": round(peak, 4), "rms": round(float(np.sqrt(np.mean(y ** 2))) if len(y) else 0.0, 5),
@@ -129,6 +112,4 @@ class Detector:
         }
 
     def model_info(self) -> dict:
-        return {k: self.eval[k] for k in
-                ("machine", "machine_id", "trained_at", "config", "counts", "metrics", "threshold",
-                 "val_percentiles", "roc", "confusion", "scores", "history", "band_error")}
+        return self.entry

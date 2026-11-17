@@ -5,7 +5,6 @@
 Outputs (backend/artifacts/):
     model.keras   trained autoencoder          norm.json    train_min / train_max (dB)
     eval.json     ROC, histograms, confusion matrix, loss curves, threshold, band errors
-    samples.json  held-out test clips offered in the UI's "try a sample" picker
 Same split (seed 42, 70/10/20 of healthy) and cache signature as the notebook,
 so spectrograms cached by the notebook are reused when paths match.
 """
@@ -154,11 +153,6 @@ def main():
         "history": {"loss": r(hist["loss"], 7), "val_loss": r(hist["val_loss"], 7)},
         "band_error": {"healthy": r(band[seg_lab == 0].mean(0)), "faulty": r(band[seg_lab == 1].mean(0))},
     }))
-    rng = np.random.default_rng(SEED)
-    pick = lambda fs, k: [str(fs[i]) for i in sorted(rng.choice(len(fs), min(k, len(fs)), replace=False))]
-    (out / "samples.json").write_text(json.dumps(
-        [{"path": p, "label": "normal"} for p in pick(test_normal, 6)] +
-        [{"path": p, "label": "abnormal"} for p in pick(abnormal, 6)], indent=1))
     print("saved ->", out)
 
 
