@@ -19,6 +19,11 @@ trained by `backend/train.py` is available as an extra. Weights are not committe
 unzip dense_models.zip -d backend/artifacts/cae          # <machine>_<id>/model.keras + norm.npz
 .venv/bin/python backend/scripts/build_registry.py --exports .   # needs export_cae/, export_dense/, export_sup/
 
+# sample clips for every machine unit (3 healthy + 3 faulty each, from the 6 dB MIMII zips on Zenodo,
+# CC BY-SA 4.0; only the chosen files are fetched via HTTP range requests, ~250 MB total)
+.venv/bin/python -I backend/scripts/fetch_samples.py --out data/samples --per-class 3
+.venv/bin/python backend/scripts/build_registry.py --exports .    # re-run to register the clips
+
 # optional: train the local fan id_02 model -> backend/artifacts/   (~3 min on GPU)
 PYTHONPATH=backend .venv/bin/python backend/train.py --data fan/id_02
 
