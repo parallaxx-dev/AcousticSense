@@ -1,0 +1,146 @@
+[
+ {
+  "path": "fan/id_00/normal/00000453.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_00"
+ },
+ {
+  "path": "fan/id_00/normal/00000313.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_00"
+ },
+ {
+  "path": "fan/id_00/normal/00000432.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_00"
+ },
+ {
+  "path": "fan/id_00/abnormal/00000034.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_00"
+ },
+ {
+  "path": "fan/id_00/abnormal/00000283.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_00"
+ },
+ {
+  "path": "fan/id_00/abnormal/00000347.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_00"
+ },
+ {
+  "path": "fan/id_02/normal/00000583.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_02"
+ },
+ {
+  "path": "fan/id_02/normal/00000317.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_02"
+ },
+ {
+  "path": "fan/id_02/normal/00000706.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_02"
+ },
+ {
+  "path": "fan/id_02/abnormal/00000045.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_02"
+ },
+ {
+  "path": "fan/id_02/abnormal/00000183.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_02"
+ },
+ {
+  "path": "fan/id_02/abnormal/00000280.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_02"
+ },
+ {
+  "path": "fan/id_04/normal/00000370.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_04"
+ },
+ {
+  "path": "fan/id_04/normal/00000385.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_04"
+ },
+ {
+  "path": "fan/id_04/normal/00000484.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_04"
+ },
+ {
+  "path": "fan/id_04/abnormal/00000139.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_04"
+ },
+ {
+  "path": "fan/id_04/abnormal/00000222.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_04"
+ },
+ {
+  "path": "fan/id_04/abnormal/00000286.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_04"
+ },
+ {
+  "path": "fan/id_06/normal/00000440.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_06"
+ },
+ {
+  "path": "fan/id_06/normal/00000384.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_06"
+ },
+ {
+  "path": "fan/id_06/normal/00000599.wav",
+  "label": "normal",
+  "machine": "fan",
+  "unit": "id_06"
+ },
+ {
+  "path": "fan/id_06/abnormal/00000022.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_06"
+ },
+ {
+  "path": "fan/id_06/abnormal/00000298.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_06"
+ },
+ {
+  "path": "fan/id_06/abnormal/00000308.wav",
+  "label": "abnormal",
+  "machine": "fan",
+  "unit": "id_06"
+ }
+]
