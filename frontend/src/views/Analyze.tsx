@@ -3,7 +3,6 @@ import { analyzeFile, analyzeSample, sampleAudioUrl, type Analysis, type ModelIn
 import { b64ToU8, fmtScore } from '../lib/decode'
 import { cssGradient } from '../lib/colormap'
 import { useAudio } from '../lib/useAudio'
-import { css } from '../lib/useCanvas'
 import Heatmap from '../components/Heatmap'
 import Waveform from '../components/Waveform'
 import WindowScores from '../components/WindowScores'
@@ -12,15 +11,13 @@ import { Dropzone, SamplePicker } from '../components/Input'
 import Verdict from '../components/Verdict'
 import Pipeline from '../components/Pipeline'
 
-export interface HistoryItem { id: number; name: string; score: number; threshold: number; at: string }
-
 function quantile(sorted: number[], q: number) {        // numpy "linear" interpolation
   const p = q * (sorted.length - 1), lo = Math.floor(p), hi = Math.ceil(p)
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (p - lo)
 }
 
-export default function Analyze({ model, samples, onResult, history }: {
-  model: ModelInfo; samples: Sample[]; onResult: (a: Analysis) => void; history: HistoryItem[]
+export default function Analyze({ model, samples, onResult }: {
+  model: ModelInfo; samples: Sample[]; onResult: (a: Analysis) => void
 }) {
   const [a, setA] = useState<Analysis | null>(null)
   const [busy, setBusy] = useState(false)
@@ -56,13 +53,13 @@ export default function Analyze({ model, samples, onResult, history }: {
     wins: a.windows.map(w => ({ input: b64ToU8(w.input), rec: b64ToU8(w.reconstruction), err: b64ToU8(w.error) })),
   }), [a])
 
-  const melOverlay = useCallback((ctx: CanvasRenderingContext2D, p: { x: number; y: number; w: number; h: number }) => {
+  const melOverlay = useCallback((ctx: CanvasRenderingContext2D, p: { x: number; y: number; w: number; h: number }, v: (n: string) => string) => {
     if (!a) return
     const dur = a.waveform.duration_s
     a.windows.forEach(w => {
       const x0 = p.x + (w.start_s / dur) * p.w, x1 = p.x + (Math.min(w.end_s, dur) / dur) * p.w
       if (w.index === sel) {
-        ctx.strokeStyle = w.score > threshold ? css('--bad') : css('--accent'); ctx.lineWidth = 2
+        ctx.strokeStyle = w.score > threshold ? v('--bad') : v('--accent'); ctx.lineWidth = 2
         ctx.strokeRect(x0 + 1, p.y + 1, x1 - x0 - 2, p.h - 2)
       }
     })
@@ -84,11 +81,11 @@ export default function Analyze({ model, samples, onResult, history }: {
 
   return (
     <div className="stack">
-      <section className="card intro">
-        <div className="intro-l">
-          <h2>Analyse a machine recording</h2>
-          <p>The autoencoder was trained only on healthy <b>{model.machine} {model.machine_id.replace('_', ' ')}</b> sound.
-            It reconstructs what it has learned; anything it can't reproduce — a bearing rattle, a rub, a new tone — shows up as error.</p>
+      <section className="intake" aria-labelledby="intake-h">
+        <div>
+          <h1 id="intake-h">Hear what the model can't explain.</h1>
+          <p className="lead">The model learned only from healthy {model.machine} {model.machine_id.replace('_', ' ')} recordings. It rebuilds each sound
+            from a {model.config.latent_dim}-number summary. A rattle, a rub or a new tone doesn't fit that summary, so it comes back wrong, and the mismatch is the warning.</p>
           <SamplePicker samples={samples} onPick={onSample} busy={busy} active={sampleId} />
         </div>
         <Dropzone onFile={onFile} busy={busy} />
@@ -96,89 +93,76 @@ export default function Analyze({ model, samples, onResult, history }: {
       {err && <div className="alert bad" role="alert">{err}</div>}
 
       {a && win && decoded && (<>
-        <Verdict a={a} threshold={threshold} pct={pct} minPct={minPct} defaultPct={model.config.percentile}
+        <Verdict a={a} model={model} threshold={threshold} pct={pct} minPct={minPct} defaultPct={model.config.percentile}
           onPct={setPct} onExport={exportReport} />
         {a.warnings.map(w => <div key={w} className="alert warn">{w}</div>)}
 
-        <section className="card">
-          <header className="c-head">
-            <div><h3>1 · Audio signal</h3>
-              <p>{a.metadata.duration_s.toFixed(2)} s at {a.metadata.sample_rate / 1000} kHz · peak {a.metadata.peak} · RMS {a.metadata.rms}.
-                Shaded bands are the {a.metadata.n_windows} overlapping analysis windows (red = above threshold). Click to select.</p></div>
-            <button className="primary" onClick={player.toggle} disabled={!player.ready}>{player.playing ? '❚❚ Pause' : '▶ Play'}</button>
+        <section className="block" aria-labelledby="s1">
+          <header>
+            <div><h2 id="s1"><span className="n">1</span>Signal</h2>
+              <p>{a.metadata.duration_s.toFixed(2)} seconds at {a.metadata.sample_rate / 1000} kHz. The clip is cut into {a.metadata.n_windows} overlapping windows of {a.metadata.window_s.toFixed(1)} seconds.
+                Red windows are over the alarm limit. Click one to inspect it.</p></div>
+            <button className="btn" onClick={player.toggle} disabled={!player.ready}>{player.playing ? 'Pause' : 'Play recording'}</button>
           </header>
-          <Waveform a={a} selected={sel} time={player.time} threshold={threshold} onSelect={setSel} onSeek={player.seek} />
+          <div className="screen"><Waveform a={a} selected={sel} time={player.time} threshold={threshold} onSelect={setSel} onSeek={player.seek} /></div>
         </section>
 
-        <section className="card">
-          <header className="c-head"><div><h3>2 · Log-Mel spectrogram</h3>
-            <p>Waveform → STFT (1024-pt, hop 512) → 128 Mel filters → dB. Full clip, before windowing and normalisation.</p></div>
+        <section className="block" aria-labelledby="s2">
+          <header>
+            <div><h2 id="s2"><span className="n">2</span>Mel spectrogram</h2>
+              <p>Loudness at each frequency over time, on the perceptual mel scale. This is the picture the model actually reads.</p></div>
             <div className="cbar"><span>{a.full_mel.db_min.toFixed(0)} dB</span><i style={{ background: cssGradient('magma') }} /><span>{a.full_mel.db_max.toFixed(0)} dB</span></div>
           </header>
-          <Heatmap data={decoded.full} rows={a.full_mel.n_mels} cols={a.full_mel.n_frames} seconds={a.waveform.duration_s}
+          <div className="screen"><Heatmap data={decoded.full} rows={a.full_mel.n_mels} cols={a.full_mel.n_frames} seconds={a.waveform.duration_s}
             height={240} overlay={melOverlay} onClickTime={t => { player.seek(t); setSel(Math.min(a.windows.length - 1, Math.max(0, Math.floor(t / a.metadata.hop_s)))) }}
-            readout={v => `${(a.full_mel.db_min + (v / 255) * (a.full_mel.db_max - a.full_mel.db_min)).toFixed(1)} dB`} />
+            readout={v => `${(a.full_mel.db_min + (v / 255) * (a.full_mel.db_max - a.full_mel.db_min)).toFixed(1)} dB`} /></div>
         </section>
 
-        <section className="card">
-          <header className="c-head"><div><h3>3 · Reconstruction error over time</h3>
-            <p>Clip score = mean of window scores. The decision is <code>score &gt; threshold</code>, with the threshold set from healthy validation clips.</p></div></header>
+        <section className="block" aria-labelledby="s3">
+          <header><div><h2 id="s3"><span className="n">3</span>Error over time</h2>
+            <p>Each bar is how badly one window was rebuilt. The clip's score is the average of the bars.</p></div></header>
           <div className="two">
-            <WindowScores a={a} selected={sel} threshold={threshold} onSelect={setSel} />
-            <div>
-              <Histogram threshold={threshold} marker={a.verdict.score} groups={[
-                { name: 'healthy (val)', values: model.scores.val, color: css('--muted') || '#888' },
-                { name: 'healthy (test)', values: model.scores.test_healthy, color: css('--ok') || '#3b8' },
-                { name: 'faulty (test)', values: model.scores.test_faulty, color: css('--bad') || '#e55' }]} />
-              <p className="cap">Where this clip falls among the reference score distributions.</p>
-            </div>
+            <div className="screen"><WindowScores a={a} selected={sel} threshold={threshold} onSelect={setSel} /></div>
+            <div className="screen"><Histogram threshold={threshold} marker={a.verdict.score} groups={[
+              { name: 'healthy (validation)', values: model.scores.val, color: 'var(--muted)' },
+              { name: 'healthy (test)', values: model.scores.test_healthy, color: 'var(--ok)' },
+              { name: 'faulty (test)', values: model.scores.test_faulty, color: 'var(--bad)' }]} /></div>
           </div>
         </section>
 
-        <section className="card">
-          <header className="c-head">
-            <div><h3>4 · Window inspector — #{win.index} <small>{win.start_s.toFixed(2)}–{win.end_s.toFixed(2)} s</small></h3>
-              <p>What the network actually sees (normalised {Nm}×{T}), what it reconstructs through the {model.config.latent_dim}-d bottleneck, and where they disagree.
-                Window score <b className={win.score > threshold ? 'txt-bad' : 'txt-ok'}>{fmtScore(win.score)}</b>.</p></div>
-            <div className="nav">
-              <button className="ghost" disabled={sel === 0} onClick={() => setSel(sel - 1)}>‹ prev</button>
-              <button className="ghost" disabled={sel === a.windows.length - 1} onClick={() => setSel(sel + 1)}>next ›</button>
+        <section className="block" aria-labelledby="s4">
+          <header>
+            <div><h2 id="s4"><span className="n">4</span>Inspect window {win.index + 1} <small>{win.start_s.toFixed(2)}–{win.end_s.toFixed(2)} s</small></h2>
+              <p>What went in, what the model rebuilt, and where they differ. Error score for this window:{' '}
+                <b className={win.score > threshold ? 'txt-bad' : 'txt-ok'}>{fmtScore(win.score)}</b>.</p></div>
+            <div className="btn-row">
+              <button className="btn line" disabled={sel === 0} onClick={() => setSel(sel - 1)}>Previous</button>
+              <button className="btn line" disabled={sel === a.windows.length - 1} onClick={() => setSel(sel + 1)}>Next</button>
             </div>
           </header>
           <div className="triptych">
-            <figure><figcaption>Input <small>X (normalised)</small></figcaption>
-              <Heatmap data={decoded.wins[sel].input} rows={Nm} cols={T} seconds={winSec} xOffset={win.start_s} height={230} smooth={false}
-                readout={v => (v / 255).toFixed(3)} /></figure>
-            <figure><figcaption>Reconstruction <small>X̂</small></figcaption>
-              <Heatmap data={decoded.wins[sel].rec} rows={Nm} cols={T} seconds={winSec} xOffset={win.start_s} height={230} smooth={false}
-                readout={v => (v / 255).toFixed(3)} /></figure>
-            <figure><figcaption>Absolute error <small>|X − X̂|, scale 0–{a.err_max.toFixed(2)}</small></figcaption>
+            <figure><figcaption>Input</figcaption><div className="screen">
+              <Heatmap data={decoded.wins[sel].input} rows={Nm} cols={T} seconds={winSec} xOffset={win.start_s} height={230} smooth={false} readout={v => (v / 255).toFixed(3)} /></div></figure>
+            <figure><figcaption>Rebuilt by the model</figcaption><div className="screen">
+              <Heatmap data={decoded.wins[sel].rec} rows={Nm} cols={T} seconds={winSec} xOffset={win.start_s} height={230} smooth={false} readout={v => (v / 255).toFixed(3)} /></div></figure>
+            <figure><figcaption>Difference <small>scale 0 to {a.err_max.toFixed(2)}</small></figcaption><div className="screen">
               <Heatmap data={decoded.wins[sel].err} rows={Nm} cols={T} seconds={winSec} xOffset={win.start_s} height={230} smooth={false} cmap="inferno"
-                readout={v => ((v / 255) * a.err_max).toFixed(3)} /></figure>
+                readout={v => ((v / 255) * a.err_max).toFixed(3)} /></div></figure>
           </div>
-          <div className="two lower">
-            <div><h4>Error by frequency band</h4>
-              <BandProfile values={win.band_error} baseline={model.band_error.healthy} label={`window #${win.index}`} />
-              <p className="cap">Squared error per Mel band for this window vs. the average healthy test window — a band that sits far above the baseline points to the frequency range of the fault.</p></div>
-            <div><h4>Latent code <small>z ∈ ℝ{model.config.latent_dim}</small></h4>
-              <Latent values={win.latent} />
-              <p className="cap">The whole window is squeezed into these {model.config.latent_dim} numbers. Healthy sound compresses well; unfamiliar sound can't, which is why the error rises.</p></div>
+          <div className="two sub">
+            <div><h3>Which frequencies disagree</h3>
+              <div className="screen"><BandProfile values={win.band_error} baseline={model.band_error.healthy} label={`window ${win.index + 1}`} /></div>
+              <p className="cap">Error per frequency band, against the average healthy window. A band far above the dashed line shows where the fault lives.</p></div>
+            <div><h3>The {model.config.latent_dim}-number summary</h3>
+              <div className="screen"><Latent values={win.latent} /></div>
+              <p className="cap">The whole window squeezed through this bottleneck. Healthy sound compresses well. Unfamiliar sound doesn't, so the rebuild drifts.</p></div>
           </div>
         </section>
 
-        <section className="card"><h3>How the clip was processed</h3><Pipeline />
-          <p className="cap">Normalisation used train min/max = {a.norm.train_min.toFixed(1)} / {a.norm.train_max.toFixed(1)} dB (healthy training set only), values clipped to [0, 1].</p></section>
+        <section className="block" aria-labelledby="s5"><header><div><h2 id="s5">How the clip was processed</h2></div></header>
+          <Pipeline />
+          <p className="cap">Scaled with the healthy training range of {a.norm.train_min.toFixed(1)} to {a.norm.train_max.toFixed(1)} dB, then clipped to 0–1.</p></section>
       </>)}
-
-      {history.length > 0 && (
-        <section className="card"><h3>Session history</h3>
-          <table className="tbl"><thead><tr><th>Clip</th><th>Score</th><th>× threshold</th><th>Result</th><th>Time</th></tr></thead>
-            <tbody>{history.map(h => (
-              <tr key={h.id}><td>{h.name}</td><td className="mono">{fmtScore(h.score)}</td><td className="mono">{(h.score / h.threshold).toFixed(2)}×</td>
-                <td><span className={`pill ${h.score > h.threshold ? 'bad' : 'ok'}`}>{h.score > h.threshold ? 'anomaly' : 'healthy'}</span></td>
-                <td className="mono">{h.at}</td></tr>))}</tbody></table>
-        </section>
-      )}
     </div>
   )
 }

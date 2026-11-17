@@ -24,7 +24,7 @@ export function BandProfile({ values, baseline, label = 'this clip' }: { values:
       <path d={line(idx, values, X, Y)} className="ln main" />
       <g className="legend" transform={`translate(${ml + 8},${mt + 6})`}>
         <circle r={4} fill="var(--accent)" /><text x={9} dominantBaseline="middle">{label}</text>
-        {baseline && <><circle cx={86} r={4} fill="var(--muted)" /><text x={95} dominantBaseline="middle">healthy baseline</text></>}
+        {baseline && <><circle cx={label.length * 6.4 + 34} r={4} fill="var(--muted)" /><text x={label.length * 6.4 + 43} dominantBaseline="middle">healthy baseline</text></>}
       </g>
     </svg>
   )
@@ -85,7 +85,7 @@ export function Histogram({ groups, threshold, marker }: {
         <rect key={`${gi}-${i}`} x={X(lo + i * bw)} y={Y(d)} width={Math.max(X(lo + bw) - X(lo) - 1, 1)} height={Y(0) - Y(d)}
           fill={g.color} opacity={0.5} />)))}
       <line x1={X(threshold)} x2={X(threshold)} y1={mt} y2={Y(0)} className="thr" />
-      <text x={X(threshold) + 5} y={mt + 10} className="tick" fill="var(--warn)">threshold</text>
+      <text x={X(threshold) + 5} y={mt + 10} className="tick" fill="var(--warn)">alarm limit</text>
       {marker !== undefined && <>
         <line x1={X(marker)} x2={X(marker)} y1={mt} y2={Y(0)} stroke="var(--text)" strokeWidth={2} />
         <text x={X(marker) - 5} y={mt + 24} className="tick" textAnchor="end" fill="var(--text)">this clip</text></>}

@@ -33,7 +33,7 @@ export default function WindowScores({ a, selected, threshold, onSelect }: {
         )
       })}
       <line x1={ml} x2={W - mr} y1={y(threshold)} y2={y(threshold)} className="thr" />
-      <text x={W - mr} y={y(threshold) - 4} className="tick" textAnchor="end" fill="var(--warn)">threshold {fmtScore(threshold)}</text>
+      <text x={W - mr} y={y(threshold) - 4} className="tick" textAnchor="end" fill="var(--warn)">alarm limit {fmtScore(threshold)}</text>
     </svg>
   )
 }

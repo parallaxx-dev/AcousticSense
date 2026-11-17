@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { css, useCanvas } from '../lib/useCanvas'
+import { useCanvas } from '../lib/useCanvas'
 import { lut, type CmapName } from '../lib/colormap'
 import { fmtHz, melRowForHz } from '../lib/decode'
 
@@ -14,7 +14,7 @@ interface Props {
   /** Convert a 0..255 cell value to a readable string for the hover tooltip. */
   readout?: (v: number) => string
   /** Draw extra things (window boxes, playhead) in plot-area pixel coordinates. */
-  overlay?: (ctx: CanvasRenderingContext2D, plot: { x: number; y: number; w: number; h: number }) => void
+  overlay?: (ctx: CanvasRenderingContext2D, plot: { x: number; y: number; w: number; h: number }, v: (name: string) => string) => void
   onClickTime?: (t: number) => void
   compact?: boolean         // hide axis labels (small multiples)
   yTicks?: boolean
@@ -45,15 +45,15 @@ export default function Heatmap({ data, rows, cols, seconds, cmap = 'magma', smo
     return cv
   }, [data, rows, cols, cmap])
 
-  const ref = useCanvas((ctx, w, h) => {
+  const ref = useCanvas((ctx, w, h, v) => {
     const ml = compact || !yTicks ? 4 : 38, mb = compact ? 4 : 20
     const p = { x: ml, y: 4, w: w - ml - 4, h: h - 4 - mb }
     plotRef.current = p
     ctx.imageSmoothingEnabled = smooth
     ctx.imageSmoothingQuality = 'high'
     ctx.drawImage(bitmap, p.x, p.y, p.w, p.h)
-    ctx.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace'
-    ctx.fillStyle = css('--muted'); ctx.strokeStyle = css('--muted')
+    ctx.font = `11px ${v('--font')}`
+    ctx.fillStyle = v('--muted'); ctx.strokeStyle = v('--muted')
     if (!compact) {
       if (yTicks) {
         ctx.textAlign = 'right'; ctx.textBaseline = 'middle'
@@ -72,7 +72,7 @@ export default function Heatmap({ data, rows, cols, seconds, cmap = 'magma', smo
         ctx.fillRect(x, p.y + p.h, 1, 3)
       }
     }
-    overlay?.(ctx, p)
+    overlay?.(ctx, p, v)
     if (hover) {
       ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 1
       ctx.beginPath(); ctx.moveTo(hover.x + .5, p.y); ctx.lineTo(hover.x + .5, p.y + p.h)

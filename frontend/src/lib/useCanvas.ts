@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 
-export const css = (name: string) =>
-  getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+/** Reads a CSS variable as seen by `el` (so plots pick up the dark-screen palette). */
+export const cssVar = (el: Element, name: string) => getComputedStyle(el).getPropertyValue(name).trim()
 
 /**
  * Hi-DPI canvas that re-renders when its container resizes or the theme changes.
  * `draw` receives a context already scaled to CSS pixels.
  */
-export function useCanvas(draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void, deps: unknown[]) {
+export function useCanvas(draw: (ctx: CanvasRenderingContext2D, w: number, h: number, v: (name: string) => string) => void, deps: unknown[]) {
   const ref = useRef<HTMLCanvasElement>(null)
   const [size, setSize] = useState({ w: 0, h: 0 })
   const [theme, setTheme] = useState(0)
@@ -35,7 +35,7 @@ export function useCanvas(draw: (ctx: CanvasRenderingContext2D, w: number, h: nu
     const ctx = c.getContext('2d')!
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, size.w, size.h)
-    draw(ctx, size.w, size.h)
+    draw(ctx, size.w, size.h, name => cssVar(c, name))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [size, theme, ...deps])
 
