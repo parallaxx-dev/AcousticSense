@@ -160,3 +160,21 @@ figcaption { font: 600 var(--t-small) var(--font); margin-bottom: .6rem; }
   .kpi + .kpi { padding-left: 0; border-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+
+/* ───────── Model picker / compare ───────── */
+.picker { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem 2rem; margin-bottom: 2.2rem; }
+.pick > span { display: block; font-size: var(--t-small); color: var(--muted); margin-bottom: .4rem; }
+.seg { display: inline-flex; padding: 3px; gap: 2px; background: var(--panel); border: 1px solid var(--line); border-radius: 11px; }
+.seg button { border: 0; background: none; padding: .42rem .95rem; border-radius: 8px; color: var(--muted); font-weight: 550; font-size: var(--t-small); cursor: pointer; }
+.seg button:hover { color: var(--ink); } .seg button[aria-pressed='true'] { background: var(--ink); color: var(--bg); }
+.pick-note { flex-basis: 100%; font-size: var(--t-small); }
+.grid-auc { display: grid; grid-template-columns: auto repeat(4, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
+.grid-auc .hd { font-size: var(--t-small); color: var(--muted); align-self: end; padding: 0 .3rem .1rem; }
+.grid-auc .rowh { align-self: center; font: 650 1.05rem var(--display); padding-right: 1rem; }
+.cell { display: flex; flex-direction: column; justify-content: space-between; gap: 1.2rem; min-height: 112px; padding: .9rem 1rem; text-align: left; border: 0; border-radius: 12px; cursor: pointer; color: var(--ink);
+  background: color-mix(in srgb, var(--ok) calc(var(--q) * 42%), color-mix(in srgb, var(--bad) calc((1 - var(--q)) * 36%), var(--panel))); }
+.cell:hover { outline: 2px solid var(--ink); } .cell b { font: 750 1.9rem/1 var(--display); letter-spacing: -.035em; font-stretch: 85%; } .cell small { color: var(--ink); opacity: .72; line-height: 1.35; }
+.tbl { width: 100%; border-collapse: collapse; font-size: var(--t-small); } .tbl th { text-align: left; font-weight: 500; color: var(--muted); padding: .6rem .8rem .6rem 0; border-bottom: 1px solid var(--line); }
+.tbl td { padding: .65rem .8rem .65rem 0; border-bottom: 1px solid var(--line); } .tbl td.num, .tbl th.num { text-align: right; font-family: var(--mono); } .tbl tr:hover td { background: var(--hover); }
+.tbl .up { color: var(--ok); } .tbl .down { color: var(--bad); }
+@media (max-width: 960px) { .grid-auc { grid-template-columns: auto repeat(4, 1fr); } .cell { min-height: 90px; padding: .6rem; } .cell small { display: none; } }

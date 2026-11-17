@@ -7,6 +7,7 @@ export interface Window {
 }
 export interface Analysis {
   filename: string
+  model: { id: string; label: string }
   metadata: { duration_s: number; sample_rate: number; n_samples: number; peak: number; rms: number
     n_windows: number; window_s: number; hop_s: number }
   verdict: { score: number; threshold: number; is_anomaly: boolean; ratio: number
@@ -21,21 +22,31 @@ export interface Analysis {
   band_error_mean: number[]
   norm: { train_min: number; train_max: number }
 }
+export interface ModelSummary {
+  id: string; label: string; machine: string; unit: string; source: 'kaggle' | 'local'; snr: number | null
+  auc: number; pauc: number; f1: number
+  published_auc: number | null; dense_auc: number | null; supervised_auc: number | null
+}
 export interface ModelInfo {
-  machine: string; machine_id: string; trained_at: string
+  id: string; label: string; machine: string; unit: string; source: 'kaggle' | 'local'; snr: number | null
+  trained_at: string | null
   config: { sr: number; n_fft: number; hop: number; n_mels: number; window_samples: number; overlap: number
     T: number; latent_dim: number; percentile: number; params: number }
-  counts: { train: number; val: number; test_healthy: number; test_faulty: number }
-  metrics: { auc: number; pauc: number; f1: number; threshold: number }
+  counts: { train: number | null; val: number; test_healthy: number; test_faulty: number }
+  metrics: { auc: number; pauc: number; f1: number; threshold: number
+    bal_acc?: number; recall?: number; false_alarm?: number; recall_at_5pct_fa?: number }
   threshold: number
   val_percentiles: Record<string, number>
   roc: { fpr: number[]; tpr: number[] }
   confusion: number[][]
   scores: { val: number[]; test_healthy: number[]; test_faulty: number[] }
   history: { loss: number[]; val_loss: number[] }
-  band_error: { healthy: number[]; faulty: number[] }
+  band_error: { healthy: number[]; faulty: number[] } | null
+  published_auc: number | null
+  compare: { dense_auc: number | null; supervised_auc: number | null }
+  epochs: number; minutes: number | null
 }
-export interface Sample { id: number; label: 'normal' | 'abnormal'; name: string; group: string }
+export interface Sample { id: number; label: 'normal' | 'abnormal'; name: string; machine: string; unit: string }
 
 async function parse<T>(r: Response): Promise<T> {
   if (!r.ok) {
@@ -46,14 +57,15 @@ async function parse<T>(r: Response): Promise<T> {
   return r.json()
 }
 
-export const getModel = () => fetch(`${API}/model`).then(r => parse<ModelInfo>(r))
-export const getSamples = () => fetch(`${API}/samples`).then(r => parse<Sample[]>(r))
-export const getHealth = () => fetch(`${API}/health`).then(r => parse<{ status: string; detail: string | null }>(r))
+const q = (model: string) => `model=${encodeURIComponent(model)}`
+export const getModels = () => fetch(`${API}/models`).then(r => parse<{ default: string; models: ModelSummary[] }>(r))
+export const getModel = (id: string) => fetch(`${API}/models/${encodeURIComponent(id)}`).then(r => parse<ModelInfo>(r))
+export const getSamples = (model: string) => fetch(`${API}/samples?${q(model)}`).then(r => parse<Sample[]>(r))
 export const sampleAudioUrl = (id: number) => `${API}/samples/${id}/audio`
-export const analyzeSample = (id: number) =>
-  fetch(`${API}/analyze/sample/${id}`, { method: 'POST' }).then(r => parse<Analysis>(r))
-export const analyzeFile = (file: File) => {
+export const analyzeSample = (id: number, model: string) =>
+  fetch(`${API}/analyze/sample/${id}?${q(model)}`, { method: 'POST' }).then(r => parse<Analysis>(r))
+export const analyzeFile = (file: File, model: string) => {
   const body = new FormData()
   body.append('file', file)
-  return fetch(`${API}/analyze`, { method: 'POST', body }).then(r => parse<Analysis>(r))
+  return fetch(`${API}/analyze?${q(model)}`, { method: 'POST', body }).then(r => parse<Analysis>(r))
 }

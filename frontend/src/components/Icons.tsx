@@ -7,6 +7,7 @@ const P: Record<string, string> = {
   upload: 'M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3',
   play: 'M7 4.5v15l12-7.5z',
   pause: 'M8 5v14m8-14v14',
+  grid: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z',
   down: 'M12 4v12m0 0 4.5-4.5M12 16l-4.5-4.5M4 20h16',
 }
 export default function Icon({ name, size = 18 }: { name: keyof typeof P; size?: number }) {

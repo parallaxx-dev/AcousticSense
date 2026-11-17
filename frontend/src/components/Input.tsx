@@ -20,10 +20,10 @@ export function Dropzone({ onFile, busy }: { onFile: (f: File) => void; busy: bo
   )
 }
 
-export function SamplePicker({ samples, onPick, busy, active }: {
-  samples: Sample[]; onPick: (s: Sample) => void; busy: boolean; active?: number
+export function SamplePicker({ samples, onPick, busy, active, note }: {
+  samples: Sample[]; onPick: (s: Sample) => void; busy: boolean; active?: number; note?: string
 }) {
-  if (!samples.length) return null
+  if (!samples.length) return <p className="cap">No local sample clips for this machine. Drop in your own .wav recording to try this model.</p>
   const groups: [string, Sample['label'], string][] = [['Healthy recordings', 'normal', 'ok'], ['Faulty recordings', 'abnormal', 'bad']]
   return (
     <div>
@@ -32,12 +32,12 @@ export function SamplePicker({ samples, onPick, busy, active }: {
           <h3>{title}</h3>
           <div className="chips">
             {samples.filter(s => s.label === label).map(s => (
-              <button key={s.id} className={`chip ${s.id === active ? 'on' : ''}`} disabled={busy} onClick={() => onPick(s)} title={`${s.group}/${s.label}/${s.name}`}>
+              <button key={s.id} className={`chip ${s.id === active ? 'on' : ''}`} disabled={busy} onClick={() => onPick(s)} title={`${s.machine}_${s.unit}/${s.label}/${s.name}`}>
                 <i className={`dot ${tone}`} />{s.name.replace('.wav', '')}
               </button>))}
           </div>
         </div>))}
-      <p className="cap">All of these are held-out clips the model never saw during training.</p>
+      <p className="cap">These are held-out clips the model never saw during training. {note}</p>
     </div>
   )
 }

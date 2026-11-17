@@ -8,14 +8,14 @@ export default function Performance({ m }: { m: ModelInfo }) {
     <div className="stack">
       <section aria-labelledby="perf-h">
         <h1 id="perf-h">How well does it catch faults?</h1>
-        <p className="lead" style={{ marginTop: '1.4rem' }}>Trained on {n.train} healthy {m.machine} {m.machine_id.replace('_', ' ')} recordings ({n.val} held back for validation) and trained {new Date(m.trained_at).toLocaleDateString()}.
+        <p className="lead" style={{ marginTop: '1.4rem' }}>Trained on healthy {m.label} recordings only{m.snr !== null ? ` at ${m.snr} dB noise` : ''}{n.train !== null ? `, ${n.train} clips with ${n.val} held back for validation` : `, with ${n.val} clips held back for validation`}.
           Tested on {n.test_healthy} healthy and {n.test_faulty} faulty recordings it had never heard.</p>
         <div className="kpis">
           <div className="kpi"><span>AUC (ranking quality)</span><b>{m.metrics.auc.toFixed(3)}</b></div>
           <div className="kpi"><span>pAUC at 10% false alarms</span><b>{m.metrics.pauc.toFixed(3)}</b></div>
           <div className="kpi"><span>F1 at the {c.percentile}th percentile limit</span><b>{m.metrics.f1.toFixed(3)}</b></div>
           <div className="kpi"><span>Alarm limit (error score)</span><b className="sm">{fmtScore(m.threshold)}</b></div>
-          <div className="kpi"><span>Model size</span><b className="sm">{(c.params / 1e3).toFixed(0)}k parameters</b></div>
+          {m.published_auc !== null && <div className="kpi"><span>MIMII paper baseline (AUC)</span><b className="sm">{m.published_auc.toFixed(2)}</b></div>}
         </div>
       </section>
       <div className="two">
@@ -29,17 +29,17 @@ export default function Performance({ m }: { m: ModelInfo }) {
           { name: 'healthy (validation)', values: m.scores.val, color: 'var(--muted)' },
           { name: 'healthy (test)', values: m.scores.test_healthy, color: 'var(--ok)' },
           { name: 'faulty (test)', values: m.scores.test_faulty, color: 'var(--bad)' }]} /></div></section>
-      <div className="two">
+      <div className={m.band_error ? 'two' : ''}>
         <section className="block"><header><div><h2>Training loss</h2><p>{m.history.loss.length} epochs. Training stopped early once validation loss stopped improving.</p></div></header>
           <div className="screen"><LossCurve loss={m.history.loss} val={m.history.val_loss} /></div></section>
-        <section className="block"><header><div><h2>Where faults show up</h2><p>Average error per frequency band, faulty against healthy recordings.</p></div></header>
-          <div className="screen"><BandProfile values={m.band_error.faulty} baseline={m.band_error.healthy} label="faulty recordings" /></div></section>
+        {m.band_error && <section className="block"><header><div><h2>Where faults show up</h2><p>Average error per frequency band, faulty against healthy recordings.</p></div></header>
+          <div className="screen"><BandProfile values={m.band_error.faulty} baseline={m.band_error.healthy} label="faulty recordings" /></div></section>}
       </div>
       <section className="block"><header><div><h2>Configuration</h2></div></header>
         <dl className="cfg">
           {([['Sample rate', `${c.sr} Hz`], ['Spectrogram', `${c.n_fft}-point FFT, hop ${c.hop}`], ['Mel bands', c.n_mels],
             ['Window', `${(c.window_samples / c.sr).toFixed(2)} s, ${c.overlap * 100}% overlap`], ['Time frames per window', c.T],
-            ['Bottleneck size', c.latent_dim], ['Clip score', 'mean of window scores'], ['Encoder filters', '32, 64, 128, 256']] as [string, string | number][])
+            ['Bottleneck size', c.latent_dim], ['Parameters', `${(c.params / 1e3).toFixed(0)}k`], ['Clip score', 'mean of window scores'], ['Encoder filters', '32, 64, 128, 256']] as [string, string | number][])
             .map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
         </dl></section>
     </div>

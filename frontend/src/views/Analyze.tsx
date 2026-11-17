@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { analyzeFile, analyzeSample, sampleAudioUrl, type Analysis, type ModelInfo, type Sample } from '../api'
+import { analyzeFile, analyzeSample, sampleAudioUrl, type Analysis, type ModelInfo, type ModelSummary, type Sample } from '../api'
 import { b64ToU8, fmtScore } from '../lib/decode'
 import { cssGradient } from '../lib/colormap'
 import { useAudio } from '../lib/useAudio'
@@ -12,14 +12,15 @@ import Verdict from '../components/Verdict'
 import Pipeline from '../components/Pipeline'
 import HeroWave from '../components/HeroWave'
 import Icon from '../components/Icons'
+import ModelPicker from '../components/ModelPicker'
 
 function quantile(sorted: number[], q: number) {        // numpy "linear" interpolation
   const p = q * (sorted.length - 1), lo = Math.floor(p), hi = Math.ceil(p)
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (p - lo)
 }
 
-export default function Analyze({ model, samples, onResult }: {
-  model: ModelInfo; samples: Sample[]; onResult: (a: Analysis) => void
+export default function Analyze({ model, models, samples, onResult, onSelect }: {
+  model: ModelInfo; models: ModelSummary[]; samples: Sample[]; onResult: (a: Analysis) => void; onSelect: (id: string) => void
 }) {
   const [a, setA] = useState<Analysis | null>(null)
   const [busy, setBusy] = useState(false)
@@ -46,8 +47,8 @@ export default function Analyze({ model, samples, onResult }: {
     finally { setBusy(false) }
   }, [model.config.percentile, onResult])
 
-  const onFile = (f: File) => run(() => analyzeFile(f), URL.createObjectURL(f))
-  const onSample = (s: Sample) => run(() => analyzeSample(s.id), sampleAudioUrl(s.id), s.id)
+  const onFile = (f: File) => run(() => analyzeFile(f, model.id), URL.createObjectURL(f))
+  const onSample = (s: Sample) => run(() => analyzeSample(s.id, model.id), sampleAudioUrl(s.id), s.id)
 
   const win = a?.windows[sel]
   const decoded = useMemo(() => a && ({
@@ -85,11 +86,12 @@ export default function Analyze({ model, samples, onResult }: {
     <div className="stack">
       <section className="hero" aria-labelledby="intake-h">
         <h1 id="intake-h">Hear what the model can't explain.</h1>
-        <p className="lead">The model learned only from healthy {model.machine} {model.machine_id.replace('_', ' ')} recordings. It rebuilds each sound
+        <p className="lead">The model learned only from healthy {model.label} recordings. It rebuilds each sound
           from a {model.config.latent_dim}-number summary. A rattle, a rub or a new tone doesn't fit that summary, so it comes back wrong, and the mismatch is the warning.</p>
+        <ModelPicker models={models} value={model.id} onChange={onSelect} />
         <div className="hero-grid">
           <Dropzone onFile={onFile} busy={busy} />
-          <SamplePicker samples={samples} onPick={onSample} busy={busy} active={sampleId} />
+          <SamplePicker samples={samples} onPick={onSample} busy={busy} active={sampleId} note={model.source === 'kaggle' ? `These local clips may have a different noise level than the ${model.snr} dB recordings this model learned from, so their scores can shift.` : undefined} />
         </div>
         {!a && <HeroWave />}
       </section>
@@ -154,8 +156,8 @@ export default function Analyze({ model, samples, onResult }: {
           </div>
           <div className="two sub">
             <div><h3>Which frequencies disagree</h3>
-              <div className="screen"><BandProfile values={win.band_error} baseline={model.band_error.healthy} label={`window ${win.index + 1}`} /></div>
-              <p className="cap">Error per frequency band, against the average healthy window. A band far above the dashed line shows where the fault lives.</p></div>
+              <div className="screen"><BandProfile values={win.band_error} baseline={model.band_error?.healthy} label={`window ${win.index + 1}`} /></div>
+              <p className="cap">{model.band_error ? 'Error per frequency band, against the average healthy window. A band far above the dashed line shows where the fault lives.' : 'Error per frequency band for this window. Peaks show which frequencies the model could not rebuild.'}</p></div>
             <div><h3>The {model.config.latent_dim}-number summary</h3>
               <div className="screen"><Latent values={win.latent} /></div>
               <p className="cap">The whole window squeezed through this bottleneck. Healthy sound compresses well. Unfamiliar sound doesn't, so the rebuild drifts.</p></div>

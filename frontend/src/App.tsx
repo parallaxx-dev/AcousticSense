@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
-import { getModel, getSamples, type Analysis, type ModelInfo, type Sample } from './api'
+import { getModel, getModels, getSamples, type Analysis, type ModelInfo, type ModelSummary, type Sample } from './api'
 import Analyze from './views/Analyze'
 import Performance from './views/Performance'
+import Compare from './views/Compare'
 import Icon from './components/Icons'
 import { fmtScore } from './lib/decode'
 
-type Tab = 'analyze' | 'model'
+type Tab = 'analyze' | 'model' | 'compare'
 type Theme = 'system' | 'light' | 'dark'
 interface HistoryItem { id: number; name: string; score: number; threshold: number }
-const HKEY = 'acousticsense.history', TKEY = 'acousticsense.theme'
+const HKEY = 'acousticsense.history', TKEY = 'acousticsense.theme', MKEY = 'acousticsense.model'
 const SECTIONS: [string, string][] = [['verdict', 'Verdict'], ['s1', 'Signal'], ['s2', 'Spectrogram'], ['s3', 'Error over time'], ['s4', 'Window inspector']]
 
 const read = (k: string) => { try { return localStorage.getItem(k) } catch { return null } }
@@ -16,6 +17,8 @@ const write = (k: string, v: string) => { try { localStorage.setItem(k, v) } cat
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('analyze')
+  const [models, setModels] = useState<ModelSummary[]>([])
+  const [modelId, setModelId] = useState<string | null>(null)
   const [model, setModel] = useState<ModelInfo | null>(null)
   const [samples, setSamples] = useState<Sample[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -31,9 +34,26 @@ export default function App() {
   }, [theme])
 
   useEffect(() => {
-    Promise.all([getModel(), getSamples().catch(() => [])])
-      .then(([m, s]) => { setModel(m); setSamples(s) })
-      .catch(e => setError(e instanceof Error ? e.message : String(e)))
+    getModels().then(({ default: d, models: ms }) => {
+      setModels(ms)
+      const saved = read(MKEY)
+      setModelId(ms.some(m => m.id === saved) ? saved! : d)
+    }).catch(e => setError(e instanceof Error ? e.message : String(e)))
+  }, [])
+
+  useEffect(() => {
+    if (!modelId) return
+    let live = true
+    write(MKEY, modelId)
+    Promise.all([getModel(modelId), getSamples(modelId).catch(() => [])])
+      .then(([m, s]) => { if (live) { setModel(m); setSamples(s); setError(null) } })
+      .catch(e => live && setError(e instanceof Error ? e.message : String(e)))
+    return () => { live = false }
+  }, [modelId])
+
+  const selectModel = useCallback((id: string, go?: Tab) => {
+    setModelId(id); setHasResult(false)
+    if (go) setTab(go)
   }, [])
 
   // Scroll-spy for the "On this page" list.
@@ -66,6 +86,7 @@ export default function App() {
         <nav aria-label="Pages">
           <button className={`nav-btn ${tab === 'analyze' ? 'on' : ''}`} onClick={() => setTab('analyze')}><Icon name="wave" />Analyse</button>
           <button className={`nav-btn ${tab === 'model' ? 'on' : ''}`} onClick={() => setTab('model')} disabled={!model}><Icon name="chart" />Model performance</button>
+          <button className={`nav-btn ${tab === 'compare' ? 'on' : ''}`} onClick={() => setTab('compare')} disabled={!models.length}><Icon name="grid" />Compare models</button>
         </nav>
         {hasResult && tab === 'analyze' && (
           <div className="group">
@@ -92,7 +113,7 @@ export default function App() {
               <button key={t} aria-pressed={theme === t} aria-label={label} title={label} onClick={() => setTheme(t)}><Icon name={icon} size={16} /></button>))}
           </div>
           <div className={`status ${model ? 'ok' : error ? 'bad' : ''}`} role="status">
-            <i />{model ? `Model ready · ${model.machine} ${model.machine_id.replace('_', ' ')}` : error ? 'Model API offline' : 'Connecting to the model…'}
+            <i />{model ? `Model ready · ${model.label}` : error ? 'Model API offline' : 'Connecting to the model…'}
           </div>
         </div>
       </aside>
@@ -103,7 +124,9 @@ export default function App() {
             <p className="cap">Start it with <code>uvicorn app.main:app --port 8000</code> from <code>backend/</code>. If the model is missing, run <code>python backend/train.py</code> first.</p>
           </div>
         )}
-        {model && (tab === 'analyze' ? <Analyze model={model} samples={samples} onResult={onResult} /> : <Performance m={model} />)}
+        {tab === 'compare' && models.length > 0 && <Compare models={models} onPick={id => selectModel(id, 'analyze')} />}
+        {model && tab === 'analyze' && <Analyze key={model.id} model={model} models={models} samples={samples} onResult={onResult} onSelect={id => selectModel(id)} />}
+        {model && tab === 'model' && <Performance m={model} />}
         <footer>An unsupervised 2D convolutional autoencoder, trained on healthy audio only.</footer>
       </main>
     </>
