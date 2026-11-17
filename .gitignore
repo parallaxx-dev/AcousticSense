@@ -1,0 +1,10 @@
+.venv
+CLAUDE.md
+data/
+fan/
+
+node_modules/
+frontend/dist/
+backend/artifacts/model.keras
+__pycache__/
+.pytest_cache/
