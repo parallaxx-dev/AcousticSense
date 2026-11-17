@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Analysis, ModelInfo } from '../api'
 import { fmtScore } from '../lib/decode'
+import Icon from './Icons'
 
 type Sev = Analysis['verdict']['severity']
 const HEAD: Record<Sev, string> = {
@@ -53,29 +54,38 @@ export default function Verdict({ a, model, threshold, pct, minPct, defaultPct, 
   const score = a.verdict.score, ratio = score / threshold, sev = severityOf(ratio)
   const bad = a.windows.filter(w => w.score > threshold)
   const worst = a.windows[a.verdict.worst_window]
+  const sub = bad.length === 0
+    ? `None of the ${a.windows.length} windows crossed the alarm limit.`
+    : `${bad.length} of ${a.windows.length} windows crossed the alarm limit. The biggest mismatch is at ${worst.start_s.toFixed(1)}–${worst.end_s.toFixed(1)} seconds.`
   return (
-    <section className={`block verdict ${sev}`} aria-labelledby="verdict-h">
-      <div className="v-top">
+    <section id="verdict" className={`verdict ${sev}`} aria-labelledby="verdict-h">
+      <div className="v-head">
         <div>
-          <h2 id="verdict-h">{HEAD[sev]}</h2>
-          <p className="file">{a.filename}</p>
+          <p className="v-file">{a.filename}</p>
+          <h2 id="verdict-h" className="v-title">{HEAD[sev]}</h2>
+          <p className="v-sub">{sub}</p>
         </div>
-        <button className="btn line" onClick={onExport}>Download report</button>
+        <div className="v-num" aria-label={`${ratio.toFixed(2)} times the alarm limit`}>
+          <b>{ratio.toFixed(2)}×</b>
+          <span>the alarm limit · score {fmtScore(score)}</span>
+        </div>
       </div>
       <Ruler model={model} score={score} threshold={threshold} />
-      <dl className="readout">
+      <dl className="facts">
         <div><dt>Error score</dt><dd>{fmtScore(score)}</dd></div>
-        <div><dt>Compared with the limit</dt><dd>{ratio.toFixed(2)}×</dd></div>
         <div><dt>Higher than healthy clips</dt><dd>{a.verdict.healthy_percentile}%</dd></div>
-        <div><dt>Windows over the limit</dt><dd>{bad.length} of {a.windows.length}</dd></div>
-        <div><dt>Loudest mismatch</dt><dd>{worst.start_s.toFixed(1)}–{worst.end_s.toFixed(1)} s</dd></div>
+        <div><dt>Windows over the limit</dt><dd>{bad.length} / {a.windows.length}</dd></div>
+        <div><dt>Clip length</dt><dd>{a.metadata.duration_s.toFixed(1)} s</dd></div>
       </dl>
-      <label className="sens">
-        <span>Alarm limit at the <b>{pct.toFixed(1)}th percentile</b> of healthy clips — about {(100 - pct).toFixed(1)}% of healthy recordings would raise a false alarm.
-          {pct !== defaultPct && <button className="link" onClick={() => onPct(defaultPct)}>Reset to {defaultPct}th</button>}</span>
-        <input type="range" min={minPct} max={100} step={0.5} value={pct} onChange={e => onPct(+e.target.value)} aria-label="Alarm limit percentile" />
-        <small><span>More alarms</span><span>Fewer false alarms</span></small>
-      </label>
+      <div className="v-foot">
+        <label className="sens">
+          <span>Alarm limit at the <b>{pct.toFixed(1)}th percentile</b> of healthy clips. About {(100 - pct).toFixed(1)}% of healthy recordings would raise a false alarm.
+            {pct !== defaultPct && <button className="link" onClick={() => onPct(defaultPct)}>Reset to {defaultPct}th</button>}</span>
+          <input type="range" min={minPct} max={100} step={0.5} value={pct} onChange={e => onPct(+e.target.value)} aria-label="Alarm limit percentile" />
+          <small><span>More alarms</span><span>Fewer false alarms</span></small>
+        </label>
+        <button className="btn line" onClick={onExport}><Icon name="down" size={16} />Download report</button>
+      </div>
     </section>
   )
 }

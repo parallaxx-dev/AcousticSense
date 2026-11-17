@@ -52,7 +52,7 @@ export default function Heatmap({ data, rows, cols, seconds, cmap = 'magma', smo
     ctx.imageSmoothingEnabled = smooth
     ctx.imageSmoothingQuality = 'high'
     ctx.drawImage(bitmap, p.x, p.y, p.w, p.h)
-    ctx.font = `11px ${v('--font')}`
+    ctx.font = `11px ${v('--mono')}`
     ctx.fillStyle = v('--muted'); ctx.strokeStyle = v('--muted')
     if (!compact) {
       if (yTicks) {

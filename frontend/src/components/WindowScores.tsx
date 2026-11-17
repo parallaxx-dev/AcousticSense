@@ -5,7 +5,7 @@ import { fmtScore } from '../lib/decode'
 export default function WindowScores({ a, selected, threshold, onSelect }: {
   a: Analysis; selected: number; threshold: number; onSelect: (i: number) => void
 }) {
-  const W = 640, H = 170, ml = 44, mb = 24, mt = 10, mr = 8
+  const W = 520, H = 170, ml = 44, mb = 24, mt = 10, mr = 8
   const ws = a.windows
   const max = Math.max(threshold * 1.25, ...ws.map(w => w.score)) * 1.05
   const bw = (W - ml - mr) / ws.length

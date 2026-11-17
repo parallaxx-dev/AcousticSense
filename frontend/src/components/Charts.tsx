@@ -5,7 +5,7 @@ const line = (xs: number[], ys: number[], X: (v: number) => number, Y: (v: numbe
 
 /** Mean reconstruction error per mel band; optional healthy baseline from the training evaluation. */
 export function BandProfile({ values, baseline, label = 'this clip' }: { values: number[]; baseline?: number[]; label?: string }) {
-  const W = 640, H = 190, ml = 48, mb = 26, mt = 8, mr = 8
+  const W = 520, H = 172, ml = 48, mb = 26, mt = 8, mr = 8
   const all = [...values, ...(baseline ?? [])].filter(v => v > 0)
   const lo = Math.log10(Math.min(...all)), hi = Math.log10(Math.max(...all))
   const X = (i: number) => ml + (i / (values.length - 1)) * (W - ml - mr)
@@ -67,7 +67,7 @@ export function Roc({ fpr, tpr, auc, pauc }: { fpr: number[]; tpr: number[]; auc
 export function Histogram({ groups, threshold, marker }: {
   groups: { name: string; values: number[]; color: string }[]; threshold: number; marker?: number
 }) {
-  const W = 640, H = 220, ml = 12, mb = 26, mt = 10, mr = 12, nb = 40
+  const W = 520, H = 210, ml = 12, mb = 26, mt = 10, mr = 12, nb = 40
   const all = groups.flatMap(g => g.values).concat(threshold, marker ?? threshold)
   const lo = Math.min(...all), hi = Math.max(...all), bw = (hi - lo) / nb || 1
   const dens = groups.map(g => {
@@ -98,7 +98,7 @@ export function Histogram({ groups, threshold, marker }: {
 }
 
 export function LossCurve({ loss, val }: { loss: number[]; val: number[] }) {
-  const W = 640, H = 200, ml = 54, mb = 26, mt = 8, mr = 8
+  const W = 520, H = 190, ml = 54, mb = 26, mt = 8, mr = 8
   const all = [...loss, ...val], lo = Math.log10(Math.min(...all)), hi = Math.log10(Math.max(...all))
   const n = loss.length
   const X = (i: number) => ml + (i / Math.max(n - 1, 1)) * (W - ml - mr)

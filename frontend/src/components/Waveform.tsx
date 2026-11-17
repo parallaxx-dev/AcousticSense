@@ -40,7 +40,7 @@ export default function Waveform({ a, selected, time, threshold, onSelect, onSee
       ctx.fillRect(ml + i * colW, y0, Math.max(colW, 1), Math.max(y1 - y0, 1))
     }
     // time axis
-    ctx.font = `11px ${v('--font')}`
+    ctx.font = `11px ${v('--mono')}`
     ctx.fillStyle = v('--muted'); ctx.textBaseline = 'top'
     const step = dur > 20 ? 5 : dur > 8 ? 2 : dur > 3 ? 1 : 0.5
     for (let t = 0; t <= dur + 1e-6; t += step) {

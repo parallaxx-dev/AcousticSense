@@ -8,7 +8,7 @@ export default function Performance({ m }: { m: ModelInfo }) {
     <div className="stack">
       <section aria-labelledby="perf-h">
         <h1 id="perf-h">How well does it catch faults?</h1>
-        <p className="lead" style={{ margin: '.9rem 0 1.6rem' }}>Trained on {n.train} healthy {m.machine} {m.machine_id.replace('_', ' ')} recordings ({n.val} held back for validation) and trained {new Date(m.trained_at).toLocaleDateString()}.
+        <p className="lead" style={{ marginTop: '1.4rem' }}>Trained on {n.train} healthy {m.machine} {m.machine_id.replace('_', ' ')} recordings ({n.val} held back for validation) and trained {new Date(m.trained_at).toLocaleDateString()}.
           Tested on {n.test_healthy} healthy and {n.test_faulty} faulty recordings it had never heard.</p>
         <div className="kpis">
           <div className="kpi"><span>AUC (ranking quality)</span><b>{m.metrics.auc.toFixed(3)}</b></div>

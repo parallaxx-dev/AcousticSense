@@ -10,6 +10,8 @@ import { BandProfile, Histogram, Latent } from '../components/Charts'
 import { Dropzone, SamplePicker } from '../components/Input'
 import Verdict from '../components/Verdict'
 import Pipeline from '../components/Pipeline'
+import HeroWave from '../components/HeroWave'
+import Icon from '../components/Icons'
 
 function quantile(sorted: number[], q: number) {        // numpy "linear" interpolation
   const p = q * (sorted.length - 1), lo = Math.floor(p), hi = Math.ceil(p)
@@ -81,14 +83,15 @@ export default function Analyze({ model, samples, onResult }: {
 
   return (
     <div className="stack">
-      <section className="intake" aria-labelledby="intake-h">
-        <div>
-          <h1 id="intake-h">Hear what the model can't explain.</h1>
-          <p className="lead">The model learned only from healthy {model.machine} {model.machine_id.replace('_', ' ')} recordings. It rebuilds each sound
-            from a {model.config.latent_dim}-number summary. A rattle, a rub or a new tone doesn't fit that summary, so it comes back wrong, and the mismatch is the warning.</p>
+      <section className="hero" aria-labelledby="intake-h">
+        <h1 id="intake-h">Hear what the model can't explain.</h1>
+        <p className="lead">The model learned only from healthy {model.machine} {model.machine_id.replace('_', ' ')} recordings. It rebuilds each sound
+          from a {model.config.latent_dim}-number summary. A rattle, a rub or a new tone doesn't fit that summary, so it comes back wrong, and the mismatch is the warning.</p>
+        <div className="hero-grid">
+          <Dropzone onFile={onFile} busy={busy} />
           <SamplePicker samples={samples} onPick={onSample} busy={busy} active={sampleId} />
         </div>
-        <Dropzone onFile={onFile} busy={busy} />
+        {!a && <HeroWave />}
       </section>
       {err && <div className="alert bad" role="alert">{err}</div>}
 
@@ -97,19 +100,19 @@ export default function Analyze({ model, samples, onResult }: {
           onPct={setPct} onExport={exportReport} />
         {a.warnings.map(w => <div key={w} className="alert warn">{w}</div>)}
 
-        <section className="block" aria-labelledby="s1">
+        <section className="block" id="s1" aria-labelledby="s1h">
           <header>
-            <div><h2 id="s1"><span className="n">1</span>Signal</h2>
+            <div><h2 id="s1h">Signal</h2>
               <p>{a.metadata.duration_s.toFixed(2)} seconds at {a.metadata.sample_rate / 1000} kHz. The clip is cut into {a.metadata.n_windows} overlapping windows of {a.metadata.window_s.toFixed(1)} seconds.
                 Red windows are over the alarm limit. Click one to inspect it.</p></div>
-            <button className="btn" onClick={player.toggle} disabled={!player.ready}>{player.playing ? 'Pause' : 'Play recording'}</button>
+            <button className="btn" onClick={player.toggle} disabled={!player.ready}><Icon name={player.playing ? 'pause' : 'play'} size={15} />{player.playing ? 'Pause' : 'Play recording'}</button>
           </header>
           <div className="screen"><Waveform a={a} selected={sel} time={player.time} threshold={threshold} onSelect={setSel} onSeek={player.seek} /></div>
         </section>
 
-        <section className="block" aria-labelledby="s2">
+        <section className="block" id="s2" aria-labelledby="s2h">
           <header>
-            <div><h2 id="s2"><span className="n">2</span>Mel spectrogram</h2>
+            <div><h2 id="s2h">Mel spectrogram</h2>
               <p>Loudness at each frequency over time, on the perceptual mel scale. This is the picture the model actually reads.</p></div>
             <div className="cbar"><span>{a.full_mel.db_min.toFixed(0)} dB</span><i style={{ background: cssGradient('magma') }} /><span>{a.full_mel.db_max.toFixed(0)} dB</span></div>
           </header>
@@ -118,8 +121,8 @@ export default function Analyze({ model, samples, onResult }: {
             readout={v => `${(a.full_mel.db_min + (v / 255) * (a.full_mel.db_max - a.full_mel.db_min)).toFixed(1)} dB`} /></div>
         </section>
 
-        <section className="block" aria-labelledby="s3">
-          <header><div><h2 id="s3"><span className="n">3</span>Error over time</h2>
+        <section className="block" id="s3" aria-labelledby="s3h">
+          <header><div><h2 id="s3h">Error over time</h2>
             <p>Each bar is how badly one window was rebuilt. The clip's score is the average of the bars.</p></div></header>
           <div className="two">
             <div className="screen"><WindowScores a={a} selected={sel} threshold={threshold} onSelect={setSel} /></div>
@@ -130,9 +133,9 @@ export default function Analyze({ model, samples, onResult }: {
           </div>
         </section>
 
-        <section className="block" aria-labelledby="s4">
+        <section className="block" id="s4" aria-labelledby="s4h">
           <header>
-            <div><h2 id="s4"><span className="n">4</span>Inspect window {win.index + 1} <small>{win.start_s.toFixed(2)}–{win.end_s.toFixed(2)} s</small></h2>
+            <div><h2 id="s4h">Inspect window {win.index + 1} <small>{win.start_s.toFixed(2)}–{win.end_s.toFixed(2)} s</small></h2>
               <p>What went in, what the model rebuilt, and where they differ. Error score for this window:{' '}
                 <b className={win.score > threshold ? 'txt-bad' : 'txt-ok'}>{fmtScore(win.score)}</b>.</p></div>
             <div className="btn-row">
@@ -159,7 +162,7 @@ export default function Analyze({ model, samples, onResult }: {
           </div>
         </section>
 
-        <section className="block" aria-labelledby="s5"><header><div><h2 id="s5">How the clip was processed</h2></div></header>
+        <section className="block"><header><div><h2>How the clip was processed</h2></div></header>
           <Pipeline />
           <p className="cap">Scaled with the healthy training range of {a.norm.train_min.toFixed(1)} to {a.norm.train_max.toFixed(1)} dB, then clipped to 0–1.</p></section>
       </>)}
