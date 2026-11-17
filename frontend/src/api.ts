@@ -46,7 +46,7 @@ export interface ModelInfo {
   compare: { dense_auc: number | null; supervised_auc: number | null }
   epochs: number; minutes: number | null
 }
-export interface Sample { id: number; label: 'normal' | 'abnormal'; name: string; machine: string; unit: string }
+export interface Sample { id: number; label: 'normal' | 'abnormal'; name: string; machine: string; unit: string; snr: number | null }
 
 async function parse<T>(r: Response): Promise<T> {
   if (!r.ok) {

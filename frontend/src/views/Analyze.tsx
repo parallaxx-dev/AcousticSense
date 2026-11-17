@@ -91,7 +91,7 @@ export default function Analyze({ model, models, samples, onResult, onSelect }: 
         <ModelPicker models={models} value={model.id} onChange={onSelect} />
         <div className="hero-grid">
           <Dropzone onFile={onFile} busy={busy} />
-          <SamplePicker samples={samples} onPick={onSample} busy={busy} active={sampleId} note={model.source === 'kaggle' ? `These local clips may have a different noise level than the ${model.snr} dB recordings this model learned from, so their scores can shift.` : undefined} />
+          <SamplePicker samples={samples} onPick={onSample} busy={busy} active={sampleId} note={model.snr !== null && samples.some(x => x.snr !== model.snr) ? `These clips may have a different noise level than the ${model.snr} dB recordings this model learned from, so their scores can shift.` : undefined} />
         </div>
         {!a && <HeroWave />}
       </section>

@@ -30,7 +30,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exports", default=".", help="folder holding export_cae/, export_dense/, export_sup/")
     ap.add_argument("--models", default=str(HERE / "artifacts" / "cae"))
-    ap.add_argument("--fan-audio", default="fan", help="local MIMII fan folder used for sample clips")
+    ap.add_argument("--fan-audio", default="fan", help="fallback: local MIMII fan folder used for sample clips")
+    ap.add_argument("--samples", default="data/samples/manifest.json", help="manifest written by fetch_samples.py (preferred)")
     args = ap.parse_args()
     ex, models = Path(args.exports), Path(args.models)
 
@@ -83,18 +84,25 @@ def main():
     (models / "registry.json").write_text(json.dumps({"models": out}, separators=(",", ":")))
     print(f"registry.json: {len(out)} models")
 
-    # Held-out sample clips for each local fan unit: same split rule as the notebooks (seed 42, 70/10/20).
-    samples, rng = [], np.random.default_rng(SEED)
-    for unit_dir in sorted(glob.glob(str(Path(args.fan_audio) / "id_*"))):
-        normal = sorted(glob.glob(f"{unit_dir}/normal/*.wav"))
-        abnormal = sorted(glob.glob(f"{unit_dir}/abnormal/*.wav"))
-        if not normal or not abnormal:
-            continue
-        perm = np.random.default_rng(SEED).permutation(len(normal))
-        test_normal = [normal[i] for i in perm[int(0.8 * len(perm)):]]
-        for lab, files in (("normal", test_normal), ("abnormal", abnormal)):
-            for i in sorted(rng.choice(len(files), 3, replace=False)):
-                samples.append({"path": files[i], "label": lab, "machine": "fan", "unit": Path(unit_dir).name})
+    # Sample clips: the downloaded 6 dB held-out set if present, else held-out local fan clips.
+    samples = []
+    manifest = Path(args.samples)
+    if manifest.exists():
+        samples = [{"path": m["path"], "label": m["label"], "machine": m["machine"], "unit": m["unit"], "snr": m.get("snr")}
+                   for m in json.loads(manifest.read_text()) if Path(m["path"]).is_file()]
+    else:
+        rng = np.random.default_rng(SEED)
+        for unit_dir in sorted(glob.glob(str(Path(args.fan_audio) / "id_*"))):
+            normal = sorted(glob.glob(f"{unit_dir}/normal/*.wav"))
+            abnormal = sorted(glob.glob(f"{unit_dir}/abnormal/*.wav"))
+            if not normal or not abnormal:
+                continue
+            n = len(normal)
+            perm = np.random.default_rng(SEED).permutation(n)
+            test_normal = [normal[i] for i in perm[int(0.7 * n) + int(0.1 * n):]]
+            for lab, files in (("normal", test_normal), ("abnormal", abnormal)):
+                for i in sorted(rng.choice(len(files), 3, replace=False)):
+                    samples.append({"path": files[i], "label": lab, "machine": "fan", "unit": Path(unit_dir).name, "snr": None})
     (models / "samples.json").write_text(json.dumps(samples, indent=1))
     print("samples.json:", len(samples))
 

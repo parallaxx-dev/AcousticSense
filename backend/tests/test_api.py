@@ -61,10 +61,15 @@ def test_rejects_bad_input(client):
 def test_samples_follow_the_selected_machine(client):
     d = client.get("/api/models").json()
     s = client.get(f"/api/samples?model={d['default']}").json()
-    if s:
-        assert client.post(f"/api/analyze/sample/{s[0]['id']}?model={d['default']}").status_code == 200
-        assert client.get(f"/api/samples/{s[0]['id']}/audio").headers["content-type"] == "audio/wav"
-    other = next((m["id"] for m in d["models"] if m["machine"] != "fan"), None)
-    if other:
-        assert client.get(f"/api/samples?model={other}").json() == []
+    assert s and {x["machine"] for x in s} == {"fan"} and {x["unit"] for x in s} == {"id_02"}
+    assert client.post(f"/api/analyze/sample/{s[0]['id']}?model={d['default']}").status_code == 200
+    assert client.get(f"/api/samples/{s[0]['id']}/audio").headers["content-type"] == "audio/wav"
+    other = next((m["id"] for m in d["models"] if m["machine"] == "pump" and m["unit"] == "id_04"), None)
+    if other:                                               # downloaded clips exist for every machine unit
+        ps = client.get(f"/api/samples?model={other}").json()
+        if ps:
+            assert {x["machine"] for x in ps} == {"pump"} and {x["unit"] for x in ps} == {"id_04"}
+            assert {x["label"] for x in ps} == {"normal", "abnormal"}
+            r = client.post(f"/api/analyze/sample/{ps[0]['id']}?model={other}").json()
+            assert r["model"]["id"] == other and r["verdict"]["threshold"] > 0
     assert client.post("/api/analyze/sample/9999").status_code == 404

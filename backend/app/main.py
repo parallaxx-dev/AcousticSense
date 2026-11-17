@@ -106,7 +106,7 @@ async def analyze(file: UploadFile = File(...), model: str | None = None):
 def samples(model: str | None = None):
     """Held-out test clips (never seen in training) for the selected machine, for one-click demos."""
     try:
-        return [{k: s[k] for k in ("id", "label", "name", "machine", "unit")} for s in reg().samples_for(model)]
+        return [{k: s[k] for k in ("id", "label", "name", "machine", "unit", "snr")} for s in reg().samples_for(model)]
     except KeyError:
         raise HTTPException(404, f"Unknown model '{model}'.") from None
 

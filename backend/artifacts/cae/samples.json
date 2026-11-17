@@ -1,146 +1,674 @@
 [
  {
-  "path": "fan/id_00/normal/00000453.wav",
+  "path": "data/samples/fan/id_00/normal/00000945.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_00"
+  "unit": "id_00",
+  "snr": 6
  },
  {
-  "path": "fan/id_00/normal/00000313.wav",
+  "path": "data/samples/fan/id_00/normal/00000718.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_00"
+  "unit": "id_00",
+  "snr": 6
  },
  {
-  "path": "fan/id_00/normal/00000432.wav",
+  "path": "data/samples/fan/id_00/normal/00000959.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_00"
+  "unit": "id_00",
+  "snr": 6
  },
  {
-  "path": "fan/id_00/abnormal/00000034.wav",
+  "path": "data/samples/fan/id_00/abnormal/00000204.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_00"
+  "unit": "id_00",
+  "snr": 6
  },
  {
-  "path": "fan/id_00/abnormal/00000283.wav",
+  "path": "data/samples/fan/id_00/abnormal/00000230.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_00"
+  "unit": "id_00",
+  "snr": 6
  },
  {
-  "path": "fan/id_00/abnormal/00000347.wav",
+  "path": "data/samples/fan/id_00/abnormal/00000294.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_00"
+  "unit": "id_00",
+  "snr": 6
  },
  {
-  "path": "fan/id_02/normal/00000583.wav",
+  "path": "data/samples/fan/id_02/normal/00000005.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_02"
+  "unit": "id_02",
+  "snr": 6
  },
  {
-  "path": "fan/id_02/normal/00000317.wav",
+  "path": "data/samples/fan/id_02/normal/00000752.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_02"
+  "unit": "id_02",
+  "snr": 6
  },
  {
-  "path": "fan/id_02/normal/00000706.wav",
+  "path": "data/samples/fan/id_02/normal/00000908.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_02"
+  "unit": "id_02",
+  "snr": 6
  },
  {
-  "path": "fan/id_02/abnormal/00000045.wav",
+  "path": "data/samples/fan/id_02/abnormal/00000034.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_02"
+  "unit": "id_02",
+  "snr": 6
  },
  {
-  "path": "fan/id_02/abnormal/00000183.wav",
+  "path": "data/samples/fan/id_02/abnormal/00000163.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_02"
+  "unit": "id_02",
+  "snr": 6
  },
  {
-  "path": "fan/id_02/abnormal/00000280.wav",
+  "path": "data/samples/fan/id_02/abnormal/00000323.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_02"
+  "unit": "id_02",
+  "snr": 6
  },
  {
-  "path": "fan/id_04/normal/00000370.wav",
+  "path": "data/samples/fan/id_04/normal/00000763.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_04"
+  "unit": "id_04",
+  "snr": 6
  },
  {
-  "path": "fan/id_04/normal/00000385.wav",
+  "path": "data/samples/fan/id_04/normal/00000535.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_04"
+  "unit": "id_04",
+  "snr": 6
  },
  {
-  "path": "fan/id_04/normal/00000484.wav",
+  "path": "data/samples/fan/id_04/normal/00000049.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_04"
+  "unit": "id_04",
+  "snr": 6
  },
  {
-  "path": "fan/id_04/abnormal/00000139.wav",
+  "path": "data/samples/fan/id_04/abnormal/00000113.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_04"
+  "unit": "id_04",
+  "snr": 6
  },
  {
-  "path": "fan/id_04/abnormal/00000222.wav",
+  "path": "data/samples/fan/id_04/abnormal/00000120.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_04"
+  "unit": "id_04",
+  "snr": 6
  },
  {
-  "path": "fan/id_04/abnormal/00000286.wav",
+  "path": "data/samples/fan/id_04/abnormal/00000253.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_04"
+  "unit": "id_04",
+  "snr": 6
  },
  {
-  "path": "fan/id_06/normal/00000440.wav",
+  "path": "data/samples/fan/id_06/normal/00000311.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_06"
+  "unit": "id_06",
+  "snr": 6
  },
  {
-  "path": "fan/id_06/normal/00000384.wav",
+  "path": "data/samples/fan/id_06/normal/00000617.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_06"
+  "unit": "id_06",
+  "snr": 6
  },
  {
-  "path": "fan/id_06/normal/00000599.wav",
+  "path": "data/samples/fan/id_06/normal/00000832.wav",
   "label": "normal",
   "machine": "fan",
-  "unit": "id_06"
+  "unit": "id_06",
+  "snr": 6
  },
  {
-  "path": "fan/id_06/abnormal/00000022.wav",
+  "path": "data/samples/fan/id_06/abnormal/00000053.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_06"
+  "unit": "id_06",
+  "snr": 6
  },
  {
-  "path": "fan/id_06/abnormal/00000298.wav",
+  "path": "data/samples/fan/id_06/abnormal/00000214.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_06"
+  "unit": "id_06",
+  "snr": 6
  },
  {
-  "path": "fan/id_06/abnormal/00000308.wav",
+  "path": "data/samples/fan/id_06/abnormal/00000358.wav",
   "label": "abnormal",
   "machine": "fan",
-  "unit": "id_06"
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_00/normal/00000267.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_00/normal/00000597.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_00/normal/00000961.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_00/abnormal/00000001.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_00/abnormal/00000011.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_00/abnormal/00000109.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_02/normal/00000069.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_02/normal/00000296.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_02/normal/00000648.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_02/abnormal/00000065.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_02/abnormal/00000081.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_02/abnormal/00000106.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_04/normal/00000187.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_04/normal/00000001.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_04/normal/00000528.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_04/abnormal/00000003.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_04/abnormal/00000020.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_04/abnormal/00000032.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_06/normal/00000189.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_06/normal/00000699.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_06/normal/00000195.wav",
+  "label": "normal",
+  "machine": "pump",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_06/abnormal/00000006.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_06/abnormal/00000065.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/pump/id_06/abnormal/00000079.wav",
+  "label": "abnormal",
+  "machine": "pump",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_00/normal/00000223.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_00/normal/00000188.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_00/normal/00000983.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_00/abnormal/00000277.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_00/abnormal/00000306.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_00/abnormal/00000316.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_02/normal/00000157.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_02/normal/00000410.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_02/normal/00000528.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_02/abnormal/00000124.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_02/abnormal/00000177.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_02/abnormal/00000249.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_04/normal/00000103.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_04/normal/00000167.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_04/normal/00000137.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_04/abnormal/00000061.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_04/abnormal/00000101.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_04/abnormal/00000116.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_06/normal/00000105.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_06/normal/00000043.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_06/normal/00000275.wav",
+  "label": "normal",
+  "machine": "slider",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_06/abnormal/00000061.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_06/abnormal/00000063.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/slider/id_06/abnormal/00000087.wav",
+  "label": "abnormal",
+  "machine": "slider",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_00/normal/00000267.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_00/normal/00000851.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_00/normal/00000828.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_00/abnormal/00000027.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_00/abnormal/00000034.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_00/abnormal/00000079.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_00",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_02/normal/00000574.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_02/normal/00000272.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_02/normal/00000432.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_02/abnormal/00000039.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_02/abnormal/00000050.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_02/abnormal/00000099.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_02",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_04/normal/00000372.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_04/normal/00000272.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_04/normal/00000548.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_04/abnormal/00000038.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_04/abnormal/00000056.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_04/abnormal/00000060.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_04",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_06/normal/00000927.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_06/normal/00000525.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_06/normal/00000732.wav",
+  "label": "normal",
+  "machine": "valve",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_06/abnormal/00000053.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_06/abnormal/00000072.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_06",
+  "snr": 6
+ },
+ {
+  "path": "data/samples/valve/id_06/abnormal/00000108.wav",
+  "label": "abnormal",
+  "machine": "valve",
+  "unit": "id_06",
+  "snr": 6
  }
 ]

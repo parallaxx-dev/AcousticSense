@@ -69,7 +69,7 @@ class Registry:
                 path = (C.PROJECT_DIR / s["path"]).resolve()
                 if path.is_file():
                     out.append({"id": len(out), "label": s["label"], "name": path.name, "machine": s.get("machine", "fan"),
-                                "unit": s.get("unit", path.parent.parent.name), "path": path})
+                                "unit": s.get("unit", path.parent.parent.name), "snr": s.get("snr"), "path": path})
             break
         return out
 
