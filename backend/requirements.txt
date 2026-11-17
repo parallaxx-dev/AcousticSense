@@ -1,0 +1,11 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+tensorflow>=2.16
+librosa>=0.10
+soundfile
+numpy
+scikit-learn
+joblib
+pytest
+httpx
