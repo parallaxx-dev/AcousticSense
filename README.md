@@ -94,11 +94,11 @@ A fair comparison needs the CAE and AST notebooks re-run with `SPLIT_MODE = "blo
 
 | Notebook | What it does | Where |
 |---|---|---|
-| `kaggle_1_dense_autoencoder.ipynb` | Dense frame-stack autoencoder (MIMII-baseline style) | this repo |
-| `kaggle_2_conv_autoencoder_CAE.ipynb` | The 2D convolutional autoencoder served by the app | this repo |
-| `kaggle_3_ast_embeddings.ipynb` | Frozen AST embeddings with Mahalanobis scoring | this repo, and [on Kaggle](https://www.kaggle.com/code/aadityapyarla/acousticsense-ptembeddast-mahalnobis-v1) |
-| `kaggle_4_supervised_cnn.ipynb` | Supervised CNN with augmentation (uses faulty labels) | this repo, and [on Kaggle](https://www.kaggle.com/code/aadityapyarla/acousticsense-supervisedcnn-aug-v1) |
-| `local_dense_and_conv_autoencoder.ipynb` | The original local notebook | this repo |
+| `notebooks/kaggle_1_dense_autoencoder.ipynb` | Dense frame-stack autoencoder (MIMII-baseline style) | this repo |
+| `notebooks/kaggle_2_conv_autoencoder_CAE.ipynb` | The 2D convolutional autoencoder served by the app | this repo |
+| `notebooks/kaggle_3_ast_embeddings.ipynb` | Frozen AST embeddings with Mahalanobis scoring | this repo, and [on Kaggle](https://www.kaggle.com/code/aadityapyarla/acousticsense-ptembeddast-mahalnobis-v1) |
+| `notebooks/kaggle_4_supervised_cnn.ipynb` | Supervised CNN with augmentation (uses faulty labels) | this repo, and [on Kaggle](https://www.kaggle.com/code/aadityapyarla/acousticsense-supervisedcnn-aug-v1) |
+| `notebooks/local_dense_and_conv_autoencoder.ipynb` | The original local notebook (run it from `notebooks/`; it reads `../fan/`) | this repo |
 
 **Run one on Kaggle**
 
@@ -120,11 +120,13 @@ backend/
   train.py        train and export one local model
   tests/          API tests
 frontend/         React + TypeScript + Vite app
-kaggle_1_dense_autoencoder.ipynb       dense frame-stack autoencoder (MIMII-baseline style)
-kaggle_2_conv_autoencoder_CAE.ipynb    the 2D convolutional autoencoder served by the app
-kaggle_3_ast_embeddings.ipynb          AST embeddings with Mahalanobis scoring
-kaggle_4_supervised_cnn.ipynb          supervised CNN (uses faulty labels, so not like-for-like)
-local_dense_and_conv_autoencoder.ipynb the original local notebook
+notebooks/
+  kaggle_1_dense_autoencoder.ipynb       dense frame-stack autoencoder (MIMII-baseline style)
+  kaggle_2_conv_autoencoder_CAE.ipynb    the 2D convolutional autoencoder served by the app
+  kaggle_3_ast_embeddings.ipynb          AST embeddings with Mahalanobis scoring
+  kaggle_4_supervised_cnn.ipynb          supervised CNN (uses faulty labels, so not like-for-like)
+  local_dense_and_conv_autoencoder.ipynb the original local notebook
+  viz_block.py                           early plotting helper, no longer used by the notebooks
 export_cae/ export_dense/ export_sup/  results exported from the Kaggle runs
 presentation/     generates the 13-slide deck (see presentation/README.md)
 report/           the two-page paper: source, figures script and PDF (see report/README.md)
