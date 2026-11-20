@@ -519,6 +519,33 @@ function modelSlide(o) {
     txt(s, `Also tried: a supervised CNN (uses faulty labels), mean AUC ${f2(Sp.kpi.auc)}; some IDs fall far below chance (valve ID 04: AUC 0.02).`, 0.8, 6.45, 11.7, 0.5, { fontSize: 13, color: P.mute, valign: "middle" });
   }
 
+  // ---------- 14 code, notebooks and data (clickable links)
+  pres.addSection({ title: "Resources" }); SEC["Resources"] = true;
+  {
+    const s = newSlide("Resources", "Code, notebooks and data", null,
+      "Everything behind the results is linked here: the GitHub repository (notebooks, exported results, the app, this deck and the paper), the MIMII dataset copy we used on Kaggle, and the Kaggle notebooks for the CAE, the AST embeddings and the supervised CNN. The dense autoencoder notebook is in the repository. Links are clickable in slideshow mode.");
+    sub(s, "Repository, dataset and Kaggle notebooks");
+    const fa = require("react-icons/fa");
+    const REPO = "https://github.com/parallaxx-dev/AcousticSense";
+    const rows = [
+      ["GitHub repository", REPO, REPO, "FaGithub"],
+      ["MIMII dataset (Kaggle)", "https://www.kaggle.com/datasets/bisheshgiri/mimii-dataset", null, "FaDatabase"],
+      ["CAE notebook", "https://www.kaggle.com/code/nirmalkattady/acousticsense-cae-v2", null, "FaCode"],
+      ["AST embeddings notebook", "https://www.kaggle.com/code/aadityapyarla/acousticsense-ptembeddast-mahalnobis-v1", null, "FaCode"],
+      ["Supervised CNN notebook", "https://www.kaggle.com/code/aadityapyarla/acousticsense-supervisedcnn-aug-v1", null, "FaCode"],
+      ["Dense autoencoder notebook", "In the repository: notebooks/kaggle_1_dense_autoencoder.ipynb", REPO, "FaCode"],
+    ];
+    for (let i = 0; i < rows.length; i++) {
+      const [label, text, url, ic] = rows[i], link = url || text, y = 1.95 + i * 0.74;
+      card(s, 0.6, y, 12.1, 0.66);
+      s.addShape(pres.shapes.OVAL, { x: 0.78, y: y + 0.08, w: 0.5, h: 0.5, fill: { color: P.blue }, line: { color: P.blue, width: 0 }, objectName: "Icon circle " + (i + 1) });
+      s.addImage({ data: await icon(fa[ic] || fa.FaCircle, P.white), x: 0.9, y: y + 0.2, w: 0.26, h: 0.26, altText: label + " icon" });
+      txt(s, label, 1.5, y, 3.2, 0.66, { fontSize: 15, bold: true, color: P.navy, valign: "middle" });
+      s.addText([{ text, options: { hyperlink: { url: link, tooltip: link } } }], { x: 4.8, y, w: 7.8, h: 0.66, fontSize: 13, margin: 0, valign: "middle", isTextBox: true });
+    }
+    source(s, "Links are clickable in slideshow mode. The notebooks and the exported results are also in the repository (notebooks/, results/).");
+  }
+
   await pres.writeFile({ fileName: "AcousticSense_Anomaly_Detection.pptx" });
   if (!process.env.NO_THEME) await applyTheme("AcousticSense_Anomaly_Detection.pptx", THEME);
   console.log("written");

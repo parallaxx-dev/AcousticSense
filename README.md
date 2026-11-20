@@ -128,7 +128,7 @@ notebooks/
   viz_block.py                           early plotting helper, no longer used by the notebooks
 results/         exported Kaggle results: cae/, dense/, sup/ (CSVs and figures)
 models/          trained weights and the model registry (weights are not committed, see models/README.md)
-presentation/     generates the 13-slide deck (see presentation/README.md)
+presentation/     generates the 14-slide deck (see presentation/README.md)
 report/           the two-page paper: source, figures script and PDF (see report/README.md)
 docs/screenshots/ images used in this README
 ```
@@ -185,7 +185,7 @@ Settings: `API_URL` points the dev proxy at a different backend, `VITE_API_URL` 
 ## Report and slides
 
 - **Paper:** [`report/AcousticSense_Report.pdf`](report/AcousticSense_Report.pdf), a two-page, two-column write-up of the method, the comparison and its limits.
-- **Slides:** [`presentation/AcousticSense_Anomaly_Detection.pptx`](presentation/AcousticSense_Anomaly_Detection.pptx), 13 slides comparing the dense autoencoder, the CAE and AST embeddings.
+- **Slides:** [`presentation/AcousticSense_Anomaly_Detection.pptx`](presentation/AcousticSense_Anomaly_Detection.pptx), 14 slides comparing the dense autoencoder, the CAE and AST embeddings, ending with a slide of clickable links to the repository, the dataset and the notebooks.
 
 Both are generated from the exported results, so they can be rebuilt. See `report/README.md` and `presentation/README.md`.
 
