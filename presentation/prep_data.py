@@ -73,6 +73,12 @@ elif sup:
                            "bal_no": float(ab.loc[(m, False), "bal_acc"]), "bal_aug": float(ab.loc[(m, True), "bal_acc"])} for m in MACH}
     o = allres.groupby("augment")[["auc", "bal_acc"]].mean()
     out["ablation"]["all"] = {"auc_no": float(o.loc[False, "auc"]), "auc_aug": float(o.loc[True, "auc"]), "bal_no": float(o.loc[False, "bal_acc"]), "bal_aug": float(o.loc[True, "bal_acc"])}
+if not sup and "scorehist" not in out:   # score distribution (score / threshold) for the scoring slide
+    thr = res.set_index(["machine", "id"]).threshold
+    r = clips.score.values / clips.set_index(["machine", "id"]).index.map(thr).values.astype(float)
+    edges = np.arange(0, 4.01, 0.25); inter = np.clip(r, 0, 3.999)
+    hh, _ = np.histogram(inter[clips.label.values == 0], bins=edges); ff, _ = np.histogram(inter[clips.label.values == 1], bins=edges)
+    out["scorehist"] = {"labels": [f"{a:g}" for a in edges[:-1]], "healthy": [float(v) for v in hh / hh.sum()], "faulty": [float(v) for v in ff / ff.sum()]}
 if ast:
     out["protocol"]["ids"] = "IDs 00 and 02 only"
     v = allres.groupby(["feature", "scorer"]).auc.mean().round(3)
