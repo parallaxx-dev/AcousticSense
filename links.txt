@@ -1,0 +1,35 @@
+AcousticSense - project links
+=============================
+
+Code
+----
+GitHub repository:
+  https://github.com/parallaxx-dev/AcousticSense
+
+Dataset
+-------
+MIMII dataset, Kaggle copy (used for the runs):
+  https://www.kaggle.com/datasets/bisheshgiri/mimii-dataset
+MIMII dataset, original release (Zenodo, CC BY-SA 4.0):
+  https://zenodo.org/records/3384388
+
+Kaggle notebooks
+----------------
+Convolutional autoencoder, CAE (v2), Nirmal Kattady:
+  https://www.kaggle.com/code/nirmalkattady/acousticsense-cae-v2
+AST embeddings + Mahalanobis (v1), Aaditya Pyarla:
+  https://www.kaggle.com/code/aadityapyarla/acousticsense-ptembeddast-mahalnobis-v1
+Supervised CNN with augmentation (v1), Aaditya Pyarla:
+  https://www.kaggle.com/code/aadityapyarla/acousticsense-supervisedcnn-aug-v1
+Dense autoencoder: no Kaggle link yet (notebooks/kaggle_1_dense_autoencoder.ipynb in the repository)
+
+Papers and models
+-----------------
+MIMII dataset paper (Purohit et al., DCASE 2019):
+  https://arxiv.org/abs/1909.09347
+Audio-based anomaly detection with deep one-class SVDD:
+  https://arxiv.org/abs/2412.10792
+Outlier-aware inlier modeling for anomalous sound detection (Zhang et al., Interspeech 2023):
+  https://arxiv.org/abs/2309.07500
+Pretrained AST model used for the embeddings (Hugging Face):
+  https://huggingface.co/MIT/ast-finetuned-audioset-10-10-0.4593
