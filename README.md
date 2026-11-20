@@ -8,7 +8,7 @@
 ![React](https://img.shields.io/badge/React-Vite-61DAFB?logo=react&logoColor=black)
 ![Dataset](https://img.shields.io/badge/dataset-MIMII-lightgrey)
 
-**Quick links:** [Report (PDF)](report/AcousticSense_Report.pdf) · [Slides](presentation/AcousticSense_Anomaly_Detection.pptx) · [MIMII dataset on Kaggle](https://www.kaggle.com/datasets/bisheshgiri/mimii-dataset) · [AST embeddings notebook](https://www.kaggle.com/code/aadityapyarla/acousticsense-ptembeddast-mahalnobis-v1) · [Supervised CNN notebook](https://www.kaggle.com/code/aadityapyarla/acousticsense-supervisedcnn-aug-v1)
+**Quick links:** [Report (PDF)](report/AcousticSense_Report.pdf) · [Slides](presentation/AcousticSense_Anomaly_Detection.pptx) · [MIMII dataset on Kaggle](https://www.kaggle.com/datasets/bisheshgiri/mimii-dataset) · [CAE notebook](https://www.kaggle.com/code/nirmalkattady/acousticsense-cae-v2) · [AST embeddings notebook](https://www.kaggle.com/code/aadityapyarla/acousticsense-ptembeddast-mahalnobis-v1) · [Supervised CNN notebook](https://www.kaggle.com/code/aadityapyarla/acousticsense-supervisedcnn-aug-v1)
 
 AcousticSense learns what a healthy machine sounds like, then flags any recording it cannot explain. It never sees a faulty example during training, which matters because faults are rare and rarely labelled.
 
@@ -95,7 +95,7 @@ A fair comparison needs the CAE and AST notebooks re-run with `SPLIT_MODE = "blo
 | Notebook | What it does | Where |
 |---|---|---|
 | `notebooks/kaggle_1_dense_autoencoder.ipynb` | Dense frame-stack autoencoder (MIMII-baseline style) | this repo |
-| `notebooks/kaggle_2_conv_autoencoder_CAE.ipynb` | The 2D convolutional autoencoder served by the app | this repo |
+| `notebooks/kaggle_2_conv_autoencoder_CAE.ipynb` | The 2D convolutional autoencoder served by the app | this repo, and [on Kaggle](https://www.kaggle.com/code/nirmalkattady/acousticsense-cae-v2) |
 | `notebooks/kaggle_3_ast_embeddings.ipynb` | Frozen AST embeddings with Mahalanobis scoring | this repo, and [on Kaggle](https://www.kaggle.com/code/aadityapyarla/acousticsense-ptembeddast-mahalnobis-v1) |
 | `notebooks/kaggle_4_supervised_cnn.ipynb` | Supervised CNN with augmentation (uses faulty labels) | this repo, and [on Kaggle](https://www.kaggle.com/code/aadityapyarla/acousticsense-supervisedcnn-aug-v1) |
 | `notebooks/local_dense_and_conv_autoencoder.ipynb` | The original local notebook (run it from `notebooks/`; it reads `../fan/`) | this repo |
