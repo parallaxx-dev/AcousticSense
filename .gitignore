@@ -10,3 +10,4 @@ backend/artifacts/cae/*/
 *.zip
 __pycache__/
 .pytest_cache/
+presentation/render/
