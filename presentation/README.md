@@ -20,9 +20,9 @@
 ```bash
 # from the project root
 .venv/bin/python presentation/make_params.py
-.venv/bin/python presentation/prep_data.py dense export_dense --split blocked
-.venv/bin/python presentation/prep_data.py cae   export_cae   --split random
-.venv/bin/python presentation/prep_data.py sup   export_sup   --split "blocked*"
+.venv/bin/python presentation/prep_data.py dense results/dense --split blocked
+.venv/bin/python presentation/prep_data.py cae   results/cae   --split random
+.venv/bin/python presentation/prep_data.py sup   results/sup   --split "blocked*"
 .venv/bin/python presentation/prep_data.py ast   ~/Downloads/results/embedd --split random-quick
 
 cd presentation && npm install

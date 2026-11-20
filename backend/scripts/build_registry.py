@@ -3,7 +3,7 @@
 Run from the project root after unzipping the 16 per-machine models:
 
     unzip dense_models.zip -d backend/artifacts/cae          # model.keras + norm.npz per <machine>_<id>/
-    python backend/scripts/build_registry.py --exports .      # reads export_cae/, export_dense/, export_sup/
+    python backend/scripts/build_registry.py --exports results  # reads results/cae/, results/dense/, results/sup/
 
 Thresholds, ROC curves, score distributions, confusion matrices and loss curves all come from the
 notebooks' CSV exports, so nothing has to be retrained. Despite the zip's name, the weights are the
@@ -28,18 +28,18 @@ def r(a, n=6):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--exports", default=".", help="folder holding export_cae/, export_dense/, export_sup/")
+    ap.add_argument("--exports", default="results", help="folder holding cae/, dense/, sup/ (the exported Kaggle results)")
     ap.add_argument("--models", default=str(HERE / "artifacts" / "cae"))
     ap.add_argument("--fan-audio", default="fan", help="fallback: local MIMII fan folder used for sample clips")
     ap.add_argument("--samples", default="data/samples/manifest.json", help="manifest written by fetch_samples.py (preferred)")
     args = ap.parse_args()
     ex, models = Path(args.exports), Path(args.models)
 
-    res = pd.read_csv(ex / "export_cae" / "results_cae.csv")
-    scores = pd.read_csv(ex / "export_cae" / "all_clip_scores_cae.csv")
-    hist = pd.read_csv(ex / "export_cae" / "history_cae.csv")
-    dense = pd.read_csv(ex / "export_dense" / "results_dense.csv").set_index(["machine", "id"])["auc"]
-    sup_path = ex / "export_sup" / "results_sup.csv"
+    res = pd.read_csv(ex / "cae" / "results_cae.csv")
+    scores = pd.read_csv(ex / "cae" / "all_clip_scores_cae.csv")
+    hist = pd.read_csv(ex / "cae" / "history_cae.csv")
+    dense = pd.read_csv(ex / "dense" / "results_dense.csv").set_index(["machine", "id"])["auc"]
+    sup_path = ex / "sup" / "results_sup.csv"
     sup = None
     if sup_path.exists():
         s = pd.read_csv(sup_path)

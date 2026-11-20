@@ -106,7 +106,7 @@ A fair comparison needs the CAE and AST notebooks re-run with `SPLIT_MODE = "blo
 2. Turn on a GPU (**Settings > Accelerator**). The AST notebook also needs **Internet** on, once, to download the pretrained model.
 3. Set `QUICK = True` for a short check (2 IDs, 150 clips per class), then `QUICK = False` for the full run.
 4. Choose `SPLIT_MODE`: `"random"`, or `"blocked"` (clips cut in file-name order, a stricter test).
-5. Each notebook writes its CSVs, figures and a zip to `/kaggle/working`. Unzip the result into `export_<name>/` to use it here.
+5. Each notebook writes its CSVs, figures and a zip to `/kaggle/working`. Unzip the result into `results/<name>/` (`cae`, `dense` or `sup`) to use it here.
 
 The data comes from the MIMII dataset. We use IDs 00, 02, 04 and 06, the 6 dB condition and microphone 1 of 8 (18,019 clips).
 
@@ -127,7 +127,7 @@ notebooks/
   kaggle_4_supervised_cnn.ipynb          supervised CNN (uses faulty labels, so not like-for-like)
   local_dense_and_conv_autoencoder.ipynb the original local notebook
   viz_block.py                           early plotting helper, no longer used by the notebooks
-export_cae/ export_dense/ export_sup/  results exported from the Kaggle runs
+results/         exported Kaggle results: cae/, dense/, sup/ (CSVs and figures)
 presentation/     generates the 13-slide deck (see presentation/README.md)
 report/           the two-page paper: source, figures script and PDF (see report/README.md)
 docs/screenshots/ images used in this README
@@ -145,12 +145,12 @@ pip install -r backend/requirements.txt
 # 2. Models: unzip the 16 trained models and build the registry from the CSV exports.
 #    (The zip is named dense_models.zip but contains the convolutional autoencoders.)
 unzip dense_models.zip -d backend/artifacts/cae
-python backend/scripts/build_registry.py --exports .
+python backend/scripts/build_registry.py --exports results
 
 # 3. Optional: sample clips for every machine unit (3 healthy + 3 faulty each, about 235 MB).
 #    Pulls only the chosen files from the 6 dB MIMII zips on Zenodo with HTTP range requests.
 python -I backend/scripts/fetch_samples.py --out data/samples --per-class 3
-python backend/scripts/build_registry.py --exports .      # re-run to register the clips
+python backend/scripts/build_registry.py --exports results   # re-run to register the clips
 
 # 4. Backend  (API docs at http://127.0.0.1:8000/docs)
 cd backend && uvicorn app.main:app --port 8000
