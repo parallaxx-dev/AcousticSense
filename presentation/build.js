@@ -1,4 +1,4 @@
-// Builds AcousticSense_Anomaly_Detection.pptx
+// Builds AcousticSense_Anomaly_Detection_34slides.pptx
 // Real data: data/dense.json (made by prep_data.py). Models without data (cae, ast, sup) become blank templates.
 // When results arrive for a model, drop them in data/<tag>.json (same schema) and rebuild: node build.js
 const fs = require("fs");
@@ -179,452 +179,344 @@ function archSlide(model, o) {
   return s;
 }
 
-// ---------------------------------------------------------------- data-or-blank sections
-function metricsSlide(model, D) {
-  const s = newSlide(model.section, D ? model.headMetrics : "Metrics at a glance", model.chip, model.notesMetrics);
-  if (!D) pending(s); else protoTag(s, D);
-  const vals = D ? [f3(D.kpi.auc), f3(D.kpi.bal_acc), f3(D.kpi.recall), pc(D.kpi.false_alarm)] : ["—", "—", "—", "—"];
-  const labs = ["Mean AUC", "Balanced accuracy", "Recall (faults caught)", "False alarms"];
-  const kw = (12.1 - 0.3 * 3) / 4;
-  vals.forEach((v, i) => kpi(s, 0.6 + i * (kw + 0.3), 1.6, kw, 1.35, v, labs[i], D ? undefined : P.slate));
-  const hdr = ["Machine", "AUC", "pAUC", "Bal. acc.", "Recall", "False alarm", "Published AUC"].map((t) => ({ text: t, options: { bold: true, color: P.white, fill: { color: P.navy }, align: t === "Machine" ? "left" : "center", fontSize: 14 } }));
-  const rows = [hdr];
-  MACH.forEach((m) => {
-    const d = D ? D.per_machine[m] : null;
-    const cell = (v, o = {}) => ({ text: v, options: Object.assign({ align: "center", fontSize: 14, color: P.ink }, o) });
-    const recallBad = d && d.recall < 0.4;
-    rows.push([
-      { text: m[0].toUpperCase() + m.slice(1), options: { bold: true, fontSize: 14, color: P.ink } },
-      cell(d ? f3(d.auc) : "—"), cell(d ? f3(d.pauc) : "—"), cell(d ? f3(d.bal_acc) : "—"),
-      cell(d ? f3(d.recall) : "—", recallBad ? { fill: { color: "F8D7D5" }, bold: true } : {}),
-      cell(d ? pc(d.false_alarm) : "—", d && d.false_alarm > 0.2 ? { fill: { color: "FDEBD0" }, bold: true } : {}),
-      cell(D ? f3(d.published_auc) : "—", { color: P.mute }),
-    ]);
-  });
-  s.addTable(rows, { x: 0.6, y: 3.3, w: 12.1, colW: [2.6, 1.5, 1.5, 1.6, 1.5, 1.7, 1.7], rowH: 0.52, border: { type: "solid", color: P.line, pt: 0.75 }, valign: "middle", margin: [0, 0.1, 0, 0.1] });
-  txt(s, D ? "Red = most faults missed. Orange = many false alarms." : "Fill in when the results of this model are available.", 0.6, 6.05, 12.1, 0.4, { fontSize: 14, color: P.mute });
-  source(s, D ? "6 dB, " + (D.protocol.ids || "IDs 00, 02, 04, 06") + ", " + splitText(D) + ". Published AUC = MIMII paper dense AE, same IDs. Means of each machine's runs." + sup4(D) + starNote(D) : "Same test protocol as the other models, so the numbers can be compared.");
+// ================================================================= 13-SLIDE DECK
+const IMG = (f) => path.join(__dirname, "assets", f);
+const Dn = DATA.dense, Cn = DATA.cae, An = DATA.ast, Sp = DATA.sup;
+const cap1 = (m) => m[0].toUpperCase() + m.slice(1);
+const f2 = (v) => v.toFixed(2);
+function sub(s, text) { txt(s, text, 0.6, 1.4, 12.1, 0.35, { fontSize: 16, color: P.mute }); }
+function dot(s, x, y, n, color, size) {
+  const d = size || 0.55;
+  s.addShape(pres.shapes.OVAL, { x, y, w: d, h: d, fill: { color: color || P.blue }, line: { color: P.white, width: 1.5 }, objectName: "Number " + n });
+  s.addText(String(n), { x, y, w: d, h: d, fontSize: 18, bold: true, color: P.white, align: "center", valign: "middle", margin: 0, isTextBox: true });
+}
+function sameIds(D) {
+  const r = D.runs.filter((x) => ["id_00", "id_02"].includes(x.id));
+  const m = (k) => r.reduce((a, x) => a + x[k], 0) / r.length;
+  return { auc: m("auc"), pauc: m("pauc"), bal: m("bal_acc"), pub: m("published_auc"), n: r.length };
+}
+const sameD = sameIds(Dn), sameC = sameIds(Cn), sameA = sameIds(An);
+const ds = Dn.dataset;
+const nH = MACH.reduce((a, m) => a + ds[m].healthy, 0), nF = MACH.reduce((a, m) => a + ds[m].faulty, 0), nAll = nH + nF;
+const SERIES = [["Dense (blocked)", Dn, P.blue], ["CAE (random)", Cn, P.amber], ["AST (quick run)", An, P.slate]];
+
+function modelSlide(o) {
+  const s = newSlide(o.section, o.title, null, o.notes);
+  sub(s, o.sub);
+  protoTag(s, o.D);
+  drawArch(s, o.bars, o.groups, { x: 0.6, y: 1.95, w: 12.1, h: 2.4 });
+  const y = 5.3, h = 1.3;
+  card(s, 0.6, y, 2.9, h);
+  txt(s, o.paramValue, 0.8, y + 0.1, 2.5, 0.55, { fontSize: 30, bold: true, color: P.navy, valign: "middle" });
+  txt(s, o.paramLabel, 0.8, y + 0.72, 2.5, 0.5, { fontSize: 13, color: P.mute });
+  card(s, 3.75, y, 4.45, h);
+  txt(s, "Hypothesis", 3.95, y + 0.1, 4.05, 0.3, { fontSize: 14, bold: true, color: P.blue });
+  txt(s, o.hypo, 3.95, y + 0.42, 4.05, 0.85, { fontSize: 14 });
+  card(s, 8.45, y, 4.25, h);
+  txt(s, "Observed", 8.65, y + 0.1, 3.85, 0.3, { fontSize: 14, bold: true, color: "B26A00" });
+  txt(s, o.observed, 8.65, y + 0.42, 3.85, 0.85, { fontSize: 14 });
+  source(s, o.src);
   return s;
 }
 
-function runsSlide(model, D) {
-  const s = newSlide(model.section, D ? model.headRuns : "Every run", model.chip, model.notesRuns);
-  if (!D) pending(s); else protoTag(s, D);
-  const ids = ["id_00", "id_02", "id_04", "id_06"];
-  const get = (m, id, k) => (D ? (D.runs.find((r) => r.machine === m && r.id === id) || {})[k] : null);
-  const make = (title, key, x, lowV, highV) => {
-    txt(s, title, x, 1.55, 5.9, 0.4, { fontSize: 18, bold: true, color: P.navy });
-    const hdr = [{ text: "", options: { fill: { color: P.navy } } }].concat(ids.map((id) => ({ text: id.replace("id_", "ID "), options: { bold: true, color: P.white, fill: { color: P.navy }, align: "center", fontSize: 14 } })));
-    const rows = [hdr];
-    MACH.forEach((m) => {
-      const r = [{ text: m[0].toUpperCase() + m.slice(1), options: { bold: true, fontSize: 14, color: P.ink } }];
-      ids.forEach((id) => {
-        const v = get(m, id, key);
-        if (v == null) { r.push({ text: "—", options: { align: "center", fontSize: 14, color: P.slate } }); return; }
-        const t = (v - lowV) / (highV - lowV);
-        r.push({ text: v.toFixed(2), options: { align: "center", fontSize: 14, bold: true, fill: { color: blend("EAF2FA", P.blue, t) }, color: t > 0.55 ? P.white : P.ink } });
-      });
-      rows.push(r);
-    });
-    s.addTable(rows, { x, y: 2.05, w: 5.9, colW: [1.5, 1.1, 1.1, 1.1, 1.1], rowH: 0.62, border: { type: "solid", color: P.white, pt: 1.5 }, valign: "middle", margin: [0, 0.08, 0, 0.08] });
-  };
-  make("AUC (ranking quality)", "auc", 0.6, 0.5, 1.0);
-  make("Recall (faults caught)", "recall", 6.8, 0.0, 1.0);
-  const note = D ? model.runsNote : "Darker = better. Shows which machine IDs are easy or hard.";
-  txt(s, note, 0.6, 5.35, 12.1, 1.2, { fontSize: 16, color: P.ink });
-  source(s, D ? "Each cell is one run (one machine ID). Source: " + (D.tag === "ast" ? "results_embed" : "results_" + D.tag) + ".csv" : "Each cell is one run (one machine ID).");
-  return s;
-}
-
-function confusionSlide(model, D) {
-  const s = newSlide(model.section, D ? model.headConf : "Confusion matrices", model.chip, model.notesConf);
-  if (!D) pending(s); else protoTag(s, D);
-  const keys = ["all"].concat(MACH), w = 2.2, gap = 0.275;
-  keys.forEach((k, i) => {
-    const x = 0.6 + i * (w + gap);
-    txt(s, k === "all" ? "All machines" : k[0].toUpperCase() + k.slice(1), x, 1.6, w, 0.4, { fontSize: 18, bold: true, color: P.navy, align: "center" });
-    const c = D ? D.confusion[k] : null;
-    const nh = c ? c.tn + c.fp : 0, nf = c ? c.fn + c.tp : 0;
-    const cellT = (cnt, frac, good) => {
-      if (!c) return { text: "—", options: { align: "center", fontSize: 14, color: P.slate, fill: { color: P.light } } };
-      const fill = good ? blend("EAF2FA", P.blue, frac) : blend("FFFFFF", P.red, frac * 1.1);
-      return { text: [{ text: Math.round(frac * 100) + "%", options: { bold: true, fontSize: 20, breakLine: true } }, { text: fmt(cnt), options: { fontSize: 12 } }], options: { align: "center", fill: { color: fill }, color: good && frac > 0.55 ? P.white : P.ink } };
-    };
-    const hdr = (t) => ({ text: t, options: { bold: true, fontSize: 11, color: P.mute, align: "center" } });
-    const rows = [
-      [{ text: "", options: {} }, hdr("Said healthy"), hdr("Said faulty")],
-      [{ text: "Healthy", options: { bold: true, fontSize: 12, color: P.ink, align: "center" } }, cellT(c ? c.tn : 0, c ? c.tn / nh : 0, true), cellT(c ? c.fp : 0, c ? c.fp / nh : 0, false)],
-      [{ text: "Faulty", options: { bold: true, fontSize: 12, color: P.ink, align: "center" } }, cellT(c ? c.fn : 0, c ? c.fn / nf : 0, false), cellT(c ? c.tp : 0, c ? c.tp / nf : 0, true)],
-    ];
-    s.addTable(rows, { x, y: 2.1, w, colW: [0.7, 0.75, 0.75], rowH: [0.4, 1.15, 1.15], border: { type: "solid", color: P.white, pt: 2 }, valign: "middle", margin: 0.02 });
-  });
-  const note = D ? model.confNote : "Each row adds to 100% of the true class. Blue = correct, red = mistake.";
-  txt(s, note, 0.6, 5.1, 12.1, 1.4, { fontSize: 16, color: P.ink });
-  source(s, D ? "Rows = true class (percent), counts below. " + (D.tag === "sup" ? "Threshold = best balanced accuracy on validation. " : "Threshold = 95th percentile of healthy validation scores. ") + "Pooled over all runs of a machine." + starNote(D) : "Rows = true class (percent), counts below.");
-  return s;
-}
-
-function curvesSlide(model, D) {
-  const s = newSlide(model.section, D ? model.headCurves : model.curvesTitle, model.chip, model.notesCurves);
-  if (!D) {
-    pending(s);
-    dashed(s, 0.6, 1.65, 5.9, 4.8, "ROC curves", "Faults caught vs false alarms");
-    dashed(s, 6.8, 1.65, 5.9, 4.8, model.curveBlank || "Loss curves", "Train and validation");
-    source(s, "ROC: closer to the top-left corner is better.");
-    return s;
-  }
-  protoTag(s, D);
-  txt(s, "ROC curve per machine", 0.6, 1.55, 5.9, 0.35, { fontSize: 18, bold: true, color: P.navy });
-  const xs = D.roc.fpr;
-  const data = [{ name: "False alarm rate", values: xs }].concat(MACH.map((m) => ({ name: m[0].toUpperCase() + m.slice(1), values: D.roc[m] }))).concat([{ name: "Chance", values: xs }]);
-  s.addChart(pres.charts.SCATTER, data, chartBase({
-    x: 0.5, y: 1.95, w: 6.1, h: 4.65, chartColors: MACH.map((m) => MCOLOR[m]).concat([P.line]), lineSize: 2.5, lineDataSymbol: "none",
-    valAxisMinVal: 0, valAxisMaxVal: 1, valAxisMajorUnit: 0.2, catAxisMinVal: 0, catAxisMaxVal: 1, catAxisMajorUnit: 0.2,
-    showLegend: true, legendPos: "b", showCatAxisTitle: true, catAxisTitle: "False alarm rate", showValAxisTitle: true, valAxisTitle: "Faults caught",
-    catAxisTitleFontSize: 12, valAxisTitleFontSize: 12, catAxisTitleColor: P.mute, valAxisTitleColor: P.mute, catAxisTitleFontFace: FONT, valAxisTitleFontFace: FONT,
-    valAxisLabelFormatCode: "0.0", catAxisLabelFormatCode: "0.0", valGridLine: { color: "E3E8EE", size: 0.75 }, catGridLine: { color: "E3E8EE", size: 0.75 },
-  }));
-  if (D.loss) {
-  txt(s, "Training loss (average of all runs)", 6.8, 1.55, 5.9, 0.35, { fontSize: 18, bold: true, color: P.navy });
-  s.addChart(pres.charts.LINE, [{ name: "Train", labels: D.loss.epoch.map(String), values: D.loss.train }, { name: "Validation", labels: D.loss.epoch.map(String), values: D.loss.val }], chartBase({
-    x: 6.7, y: 1.95, w: 6.1, h: 4.65, chartColors: [P.blue, P.amber], lineSize: 2.5, lineDataSymbol: "none",
-    showLegend: true, legendPos: "b", valAxisMinVal: 0, valAxisLabelFormatCode: "0.0", catAxisLabelFontSize: 11, catAxisLabelFrequency: 8,
-    showCatAxisTitle: true, catAxisTitle: "Epoch", showValAxisTitle: true, valAxisTitle: "Loss (MSE)", catAxisTitleFontSize: 12, valAxisTitleFontSize: 12,
-    catAxisTitleColor: P.mute, valAxisTitleColor: P.mute, catAxisTitleFontFace: FONT, valAxisTitleFontFace: FONT,
-  }));
-  source(s, "ROC: curves of the runs of each machine, averaged. Loss: mean over runs still training at that epoch (at least 4 runs). Chance = diagonal.");
-  } else {
-    txt(s, "Scores divided by threshold", 6.8, 1.55, 5.9, 0.35, { fontSize: 18, bold: true, color: P.navy });
-    s.addChart(pres.charts.BAR, [
-      { name: "Healthy", labels: D.scorehist.labels, values: D.scorehist.healthy.map((v) => +(100 * v).toFixed(1)) },
-      { name: "Faulty", labels: D.scorehist.labels, values: D.scorehist.faulty.map((v) => +(100 * v).toFixed(1)) },
-    ], chartBase({ x: 6.7, y: 1.95, w: 6.1, h: 4.65, barDir: "col", chartColors: [P.green, P.red], showLegend: true, legendPos: "b", catAxisLabelFontSize: 10, catAxisLabelFrequency: 2, valAxisMinVal: 0,
-      showCatAxisTitle: true, catAxisTitle: "Score / threshold (1.0 = alarm line)", showValAxisTitle: true, valAxisTitle: "Share of clips (%)", catAxisTitleFontSize: 12, valAxisTitleFontSize: 12,
-      catAxisTitleColor: P.mute, valAxisTitleColor: P.mute, catAxisTitleFontFace: FONT, valAxisTitleFontFace: FONT, barGapWidthPct: 15 }));
-    source(s, "ROC: curves of the runs of each machine, averaged. Right: scores divided by each run's threshold; the last bin holds 3.75 and above." + starNote(D));
-  }
-  return s;
-}
-
-function mistakesSlide(model, D) {
-  const s = newSlide(model.section, D ? model.headMist : "Mistakes and comparison with the paper", model.chip, model.notesMist);
-  if (!D) {
-    pending(s);
-    dashed(s, 0.6, 1.65, 5.9, 4.8, "Missed faults vs false alarms", "Per machine");
-    dashed(s, 6.8, 1.65, 5.9, 4.8, "AUC vs published baseline", "Per machine");
-    source(s, "Published = MIMII paper dense autoencoder, 6 dB.");
-    return s;
-  }
-  protoTag(s, D);
-  const cap = (m) => m[0].toUpperCase() + m.slice(1);
-  txt(s, "Mistakes per machine (percent)", 0.6, 1.55, 5.9, 0.35, { fontSize: 18, bold: true, color: P.navy });
-  s.addChart(pres.charts.BAR, [
-    { name: "Missed faults", labels: MACH.map(cap), values: MACH.map((m) => +D.mistakes[m].missed_pct.toFixed(1)) },
-    { name: "False alarms", labels: MACH.map(cap), values: MACH.map((m) => +D.mistakes[m].false_alarm_pct.toFixed(1)) },
-  ], chartBase({ x: 0.5, y: 1.95, w: 6.1, h: 4.65, barDir: "col", chartColors: [P.red, P.amber], showLegend: true, legendPos: "b", showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "0.0", valAxisMinVal: 0, valAxisMaxVal: 100, barGapWidthPct: 60 }));
-  txt(s, "Mean AUC: ours vs published baseline", 6.8, 1.55, 5.9, 0.35, { fontSize: 18, bold: true, color: P.navy });
-  s.addChart(pres.charts.BAR, [
-    { name: "Ours", labels: MACH.map(cap), values: MACH.map((m) => +D.per_machine[m].auc.toFixed(3)) },
-    { name: "Published (MIMII paper)", labels: MACH.map(cap), values: MACH.map((m) => +D.per_machine[m].published_auc.toFixed(3)) },
-  ], chartBase({ x: 6.7, y: 1.95, w: 6.1, h: 4.65, barDir: "col", chartColors: [P.blue, P.slate], showLegend: true, legendPos: "b", showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "0.00", valAxisMinVal: 0.4, valAxisMaxVal: 1.0, barGapWidthPct: 60 }));
-  source(s, "Mistakes are pooled counts over all test clips. AUC: not an exact match with the paper (it averages 7 IDs and uses a different split).");
-  return s;
-}
-
-// ================================================================= BUILD
 (async () => {
-  const D = DATA;
-  const ds = D.dense.dataset;
-  const nH = MACH.reduce((a, m) => a + ds[m].healthy, 0), nF = MACH.reduce((a, m) => a + ds[m].faulty, 0), nAll = nH + nF;
-  const OFFICIAL_TOTAL = 26092 + 6065;
-
   // ---------- 1 title
   pres.addSection({ title: "Introduction" }); SEC["Introduction"] = true;
   {
     const s = pres.addSlide({ masterName: "TITLE", sectionTitle: "Introduction" });
     s.addText("Listening for faults", { placeholder: "title" });
-    s.addText("Unsupervised acoustic anomaly detection on industrial machines (MIMII dataset)", { placeholder: "body" });
-    // waveform motif: rounded bars, one amber
+    s.addText("Dense autoencoder, convolutional autoencoder and pretrained embeddings on MIMII", { placeholder: "body" });
     const n = 34, x0 = 8.2, bw = 0.09, pitch = 0.145;
     for (let i = 0; i < n; i++) {
       const env = Math.sin((i / (n - 1)) * Math.PI);
       const hh = 0.25 + 3.2 * env * (0.55 + 0.45 * Math.abs(Math.sin(i * 1.7) * Math.cos(i * 0.6)));
       s.addShape(pres.shapes.RECTANGLE, { x: x0 + i * pitch, y: 3.75 - hh / 2, w: bw, h: hh, fill: { color: i === 22 ? P.amber : (i % 3 === 0 ? P.sky : P.blue) }, line: { color: P.navy, width: 0 }, objectName: "Waveform bar " + (i + 1) });
     }
-    s.addText("Project review  |  November 2026", { x: 0.8, y: 6.5, w: 6, h: 0.35, fontSize: 14, color: "8FB3D3", margin: 0, isTextBox: true });
-    s.addNotes("Opening. One sentence: we listen to machine sound and flag the ones that sound abnormal, training only on healthy sound.");
+    const au = (rows, x) => s.addText(rows.flatMap((r, i) => [
+      { text: r[0] + "  ", options: { bold: true, color: "EAF2FA", fontSize: 15 } },
+      { text: r[1], options: { color: "8FB3D3", fontSize: 13, breakLine: i < rows.length - 1 } }]), { x, y: 5.6, w: 3.7, h: 0.7, margin: 0, valign: "top", isTextBox: true, paraSpaceAfter: 4 });
+    au([["Aaditya Pyarla", "24BCS003"], ["Nirmal Kattady", "24BCS174"]], 0.8);
+    au([["Raja Kumar", "24BSM050"], ["Deepak Choudhary", "24BSM018"]], 4.6);
+    s.addText("Indian Institute of Information Technology, Design and Manufacturing, Jabalpur", { x: 0.8, y: 6.4, w: 7.2, h: 0.5, fontSize: 13, color: "BFD6EA", margin: 0, valign: "top", isTextBox: true });
+    s.addText("17 November 2026", { x: 0.8, y: 6.9, w: 4, h: 0.3, fontSize: 13, color: "8FB3D3", margin: 0, isTextBox: true });
+    s.addNotes("This project asks whether a machine's sound alone can tell us it is about to fail, using only recordings of healthy operation. I compare three ways to model 'normal': a dense autoencoder, a convolutional autoencoder, and frozen pretrained embeddings. I'll show what each assumes, what we measured, and, importantly, where our results did not match what theory predicts. Evaluation honesty is a theme throughout.");
   }
 
-  // ---------- 2 journey
+  // ---------- 2 problem
   {
-    const s = newSlide("Introduction", "Our journey: from raw audio to a benchmark", null,
-      "Walk left to right. Numbers: local fan-only runs (id_00 AUC about 0.53-0.55, id_02 0.70-0.81), Kaggle dense autoencoder on a random split (mean AUC 0.939, 16 runs), strict blocked split (mean AUC 0.913).");
-    const steps = [
-      ["Understand the task", "Healthy-only fault detection. Log-mel pictures, autoencoder, AUC / pAUC / F1."],
-      ["First tests: fan only", "Local GPU. id_00 is hard (AUC about 0.55). id_02 is better (0.70 to 0.81)."],
-      ["Read the literature", "MIMII baseline and DCASE results. Fan id_00 and valve are known to be hard."],
-      ["Scale to all machines", "Kaggle GPU. 4 machines, 4 IDs each, 6 dB. Random split: mean AUC 0.94."],
-      ["Check for leaks", "Random splits can leak recording sessions. Strict blocked split: mean AUC 0.91."],
-      ["Try more models", "CAE and supervised CNN are done. AST embeddings: quick run only."],
-    ];
-    const cw = 12.1 / 6;
-    s.addShape(pres.shapes.LINE, { x: 0.6 + cw / 2, y: 2.35, w: 12.1 - cw, h: 0, line: { color: P.line, width: 2 } });
-    steps.forEach((st, i) => {
-      const cx = 0.6 + i * cw;
-      const last = i === 5;
-      s.addShape(pres.shapes.OVAL, { x: cx + cw / 2 - 0.35, y: 2.0, w: 0.7, h: 0.7, fill: { color: last ? P.amber : P.blue }, line: { color: P.white, width: 2 }, objectName: "Step " + (i + 1) });
-      s.addText(String(i + 1), { x: cx + cw / 2 - 0.35, y: 2.0, w: 0.7, h: 0.7, fontSize: 22, bold: true, color: P.white, align: "center", valign: "middle", margin: 0, isTextBox: true });
-      txt(s, st[0], cx + 0.08, 3.0, cw - 0.16, 0.7, { fontSize: 17, bold: true, color: P.navy, align: "center" });
-      txt(s, st[1], cx + 0.08, 3.75, cw - 0.16, 1.9, { fontSize: 14, color: P.ink, align: "center" });
+    const s = newSlide("Introduction", "Faults are rare: train on healthy sound only", null,
+      `In a real plant you cannot collect many labelled failures, and the next failure may sound different from the last. So we frame this as one-class learning: learn what healthy sounds like and flag deviations. Our data shows why: only ${Math.round((100 * nF) / nAll)}% of the clips we used are faulty, and for pump and valve there are roughly eight healthy clips for every faulty one.`);
+    sub(s, "Problem statement and motivation");
+    const rows = [["Failures are rare, and labels are scarcer", "A plant rarely has many labelled failures."], ["The next fault may not sound like the last", "A classifier only knows the faults it has seen."], ["So we learn 'normal' and flag deviations", "One-class learning: no faulty clips in training."]];
+    rows.forEach((r, i) => {
+      const y = 2.0 + i * 1.5;
+      card(s, 0.6, y, 6.1, 1.3);
+      dot(s, 0.85, y + 0.37, i + 1);
+      txt(s, r[0], 1.65, y + 0.1, 4.9, 0.66, { fontSize: 18, bold: true, color: P.navy, valign: "middle" });
+      txt(s, r[1], 1.65, y + 0.82, 4.9, 0.4, { fontSize: 14, color: P.mute });
     });
-    card(s, 0.6, 5.85, 12.1, 0.8, P.light);
-    txt(s, "Lesson: a strict test matters as much as the model. A clean split lowered our score, and made it honest.", 0.85, 5.85, 11.6, 0.8, { fontSize: 18, italic: true, color: P.navy, valign: "middle" });
+    kpi(s, 7.0, 2.0, 5.7, 1.2, (nH / nF).toFixed(1) + " : 1", "healthy to faulty clips in our data");
+    txt(s, "Healthy clips for every faulty clip", 7.0, 3.4, 5.7, 0.35, { fontSize: 18, bold: true, color: P.navy });
+    s.addChart(pres.charts.BAR, [{ name: "Ratio", labels: MACH.map(cap1), values: MACH.map((m) => +(ds[m].healthy / ds[m].faulty).toFixed(1)) }],
+      chartBase({ x: 6.9, y: 3.75, w: 5.9, h: 2.9, barDir: "col", chartColors: [P.blue, P.blue, P.blue, P.amber], showLegend: false, showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "0.0", valAxisMinVal: 0, valAxisMaxVal: 10, barGapWidthPct: 55 }));
+    source(s, "Counts from the MIMII paper (Table 1) for the IDs we used: " + fmt(nH) + " healthy and " + fmt(nF) + " faulty clips.");
   }
 
   // ---------- 3 dataset
+  pres.addSection({ title: "Method" }); SEC["Method"] = true;
   {
-    const s = newSlide("Introduction", `MIMII: 4 machine types, ${fmt(nAll)} clips used`, null,
-      "Counts are the official per-machine-ID counts from the MIMII paper (Table 1), and they match our runs exactly. We used IDs 00, 02, 04 and 06 of 7, one noise level (6 dB) of 3, and microphone 1 of 8. Official totals per noise level: 26,092 healthy and 6,065 faulty.");
-    txt(s, "Clips used, by machine", 0.6, 1.55, 6.4, 0.35, { fontSize: 18, bold: true, color: P.navy });
+    const s = newSlide("Method", `MIMII: 4 machines, ${fmt(nAll)} clips used`, null,
+      "MIMII records four machine types, seven units of each, with factory noise mixed in at three levels. We used four IDs per machine at the 6 dB level, one microphone, so 18,019 clips. On the spectrograms, a steady fan hum looks nearly identical when faulty. That is the core difficulty: the difference is subtle and sits on top of background noise.");
+    sub(s, "Dataset and exploratory view");
+    s.addImage({ path: IMG("example_spectrograms_fan_id00.png"), x: 0.6, y: 1.95, w: 7.4, h: (7.4 * 426) / 1308, altText: "Log-mel spectrograms of a healthy and a faulty fan clip (fan ID 00)" });
+    txt(s, "Fan ID 00, same colour scale: healthy (left) and faulty (right). The difference is subtle.", 0.6, 4.45, 7.4, 0.3, { fontSize: 12, color: P.mute });
+    const kw = (7.4 - 0.4) / 3;
+    [[fmt(nAll), "clips (56% of 32,157)"], ["10 s, 16 kHz", "per clip, microphone 1 of 8"], ["6 dB", "noise level; IDs 00, 02, 04, 06"]].forEach((k, i) => kpi(s, 0.6 + i * (kw + 0.2), 4.9, kw, 1.7, k[0], k[1], undefined, 26));
+    txt(s, "Clips used, by machine", 8.4, 1.95, 4.3, 0.35, { fontSize: 18, bold: true, color: P.navy });
     s.addChart(pres.charts.BAR, [
-      { name: "Healthy", labels: MACH.map((m) => m[0].toUpperCase() + m.slice(1)), values: MACH.map((m) => ds[m].healthy) },
-      { name: "Faulty", labels: MACH.map((m) => m[0].toUpperCase() + m.slice(1)), values: MACH.map((m) => ds[m].faulty) },
-    ], chartBase({ x: 0.5, y: 1.95, w: 6.6, h: 3.6, barDir: "bar", barGrouping: "stacked", chartColors: [P.green, P.red], showLegend: true, legendPos: "b", showValue: true, dataLabelPosition: "ctr", dataLabelColor: P.white, dataLabelFormatCode: "#,##0", valAxisLabelFormatCode: "#,##0", barGapWidthPct: 45, catAxisOrientation: "maxMin" }));
-    const kx = 7.5, kw = 5.2;
-    kpi(s, kx, 1.6, kw, 1.2, fmt(nAll), `clips used (${Math.round((100 * nAll) / OFFICIAL_TOTAL)}% of ${fmt(OFFICIAL_TOTAL)} at one noise level)`);
-    kpi(s, kx, 2.95, kw, 1.2, "16 runs", "4 machines x 4 IDs, one model per run");
-    kpi(s, kx, 4.3, kw, 1.2, "10 s, 16 kHz", "one clip; microphone 1 of 8; 6 dB factory noise");
-    card(s, 0.6, 5.7, 12.1, 0.95, P.light);
-    txt(s, [{ text: "Not covered yet: ", options: { bold: true, color: P.navy } }, { text: "IDs 01, 03, 05  |  noise levels 0 dB and -6 dB  |  the other 7 microphones. The 4 machines are fan, pump, slide rail (slider) and valve.", options: {} }], 0.85, 5.7, 11.6, 0.95, { fontSize: 16, valign: "middle" });
-    source(s, "Source: Purohit et al., MIMII Dataset (2019), Table 1. Counts checked against our run results.");
+      { name: "Healthy", labels: MACH.map(cap1), values: MACH.map((m) => ds[m].healthy) },
+      { name: "Faulty", labels: MACH.map(cap1), values: MACH.map((m) => ds[m].faulty) },
+    ], chartBase({ x: 8.3, y: 2.3, w: 4.5, h: 4.3, barDir: "bar", barGrouping: "stacked", chartColors: [P.green, P.red], showLegend: true, legendPos: "b", showValue: true, dataLabelPosition: "ctr", dataLabelColor: P.white, dataLabelFormatCode: "#,##0", valAxisLabelFormatCode: "#,##0", barGapWidthPct: 45, catAxisOrientation: "maxMin" }));
+    source(s, "Machine types: fan, pump, slide rail (slider), valve; 7 IDs each, 4 used. Source: MIMII paper (Purohit et al., 2019), Table 1.");
   }
 
-  // ---------- 4 research: MIMII baselines
+  // ---------- 4 preprocessing
   {
-    const s = newSlide("Research", "A small dense autoencoder scores 0.82 AUC", null,
-      "Source: Table I of arXiv 2412.10792 (average AUC over 3 runs on MIMII, 6 dB): baseline dense AE valve 0.670, pump 0.805, fan 0.913, slide rail 0.878, all 0.816; one-class deep SVDD (subspace dim 2) valve 0.772, pump 0.802, fan 0.936, slide rail 0.867, all 0.844. Baseline architecture from the MIMII paper: 5 log-mel frames (64 mel bands = 320 inputs), 64-64-8 dense autoencoder. AUC drops with more noise: baseline average 0.816 at 6 dB, 0.723 at 0 dB, 0.644 at -6 dB.");
-    txt(s, "AUC at 6 dB noise, by machine", 0.6, 1.55, 7.3, 0.35, { fontSize: 18, bold: true, color: P.navy });
-    const labs = ["Valve", "Pump", "Fan", "Slider", "All"];
-    s.addChart(pres.charts.BAR, [
-      { name: "Dense autoencoder (MIMII baseline)", labels: labs, values: [0.670, 0.805, 0.913, 0.878, 0.816] },
-      { name: "One-class Deep SVDD (convolutional)", labels: labs, values: [0.772, 0.802, 0.936, 0.867, 0.844] },
-    ], chartBase({ x: 0.5, y: 1.95, w: 7.5, h: 4.6, barDir: "col", chartColors: [P.slate, P.blue], showLegend: true, legendPos: "b", showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "0.00", valAxisMinVal: 0.4, valAxisMaxVal: 1.0, barGapWidthPct: 50 }));
-    const bx = 8.4, bw = 4.3;
-    [["Baseline = 5 frames, 64-64-8 dense network", P.slate], ["Valve is hardest, fan easiest", P.amber], ["More noise, lower AUC: 0.82 at 6 dB, 0.64 at -6 dB", P.blue], ["Convolutional Deep SVDD adds only about 0.03", P.green]].forEach((b, i) => {
-      s.addShape(pres.shapes.OVAL, { x: bx, y: 1.95 + i * 1.12, w: 0.5, h: 0.5, fill: { color: b[1] }, line: { color: b[1], width: 0 }, objectName: "Bullet " + (i + 1) });
-      txt(s, b[0], bx + 0.7, 1.9 + i * 1.12, bw - 0.7, 0.9, { fontSize: 16, valign: "middle" });
-    });
-    source(s, "Average AUC over machine IDs 00-06. Sources: MIMII paper (arXiv 1909.09347), Table I of arXiv 2412.10792.");
-  }
-
-  // ---------- 5 research: DCASE
-  {
-    const s = newSlide("Research", "Top systems go beyond reconstruction", null,
-      "Source: arXiv 2309.07500, Table 2 (AUC %, MIMII part of the DCASE 2020 development set): Official baseline 72.44, IDNN 78.00, IDCAE 81.83, GroupMADE 82.19, Glow_Aff 86.08, proposed 94.86. Table 3 (evaluation set): baseline 75.49 (269K parameters), GroupMADE 88.00, IDCAE 89.84, DDCSAD 95.24, proposed 95.54 (2M), fused systems 95.49 and 95.84 (179M). The proposed method uses outlier exposure with inlier modeling. These use a different protocol from ours.");
-    txt(s, "Average AUC (%), DCASE 2020 development set", 0.6, 1.55, 7.3, 0.35, { fontSize: 18, bold: true, color: P.navy });
-    const names = ["Official baseline", "IDNN", "IDCAE", "GroupMADE", "Glow_Aff", "Outlier-aware (best)"];
-    const vals = [72.44, 78.00, 81.83, 82.19, 86.08, 94.86];
-    s.addChart(pres.charts.BAR, [{ name: "Average AUC (%)", labels: names, values: vals }], chartBase({ x: 0.5, y: 1.95, w: 7.5, h: 4.6, barDir: "bar", chartColors: [P.slate, P.slate, P.slate, P.slate, P.slate, P.blue], showLegend: false, showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "0.0", valAxisMinVal: 50, valAxisMaxVal: 100, barGapWidthPct: 45, catAxisOrientation: "maxMin" }));
-    const bx = 8.4, bw = 4.3;
-    kpi(s, bx, 1.95, bw, 1.3, "66 to 100", "valve AUC %: baseline to best (dev)");
-    kpi(s, bx, 3.4, bw, 1.3, "57 to 97", "valve AUC %: baseline to best (eval)");
-    card(s, bx, 4.85, bw, 1.7);
-    txt(s, "The best method adds extra training signal (outlier exposure). It is not a plain reconstruction model.", bx + 0.2, 4.85, bw - 0.4, 1.7, { fontSize: 15, valign: "middle" });
-    source(s, "AUC %, MIMII part of DCASE 2020 Task 2. Source: arXiv 2309.07500, Tables 2 and 3. Different protocol from ours.");
-  }
-
-  // ---------- 6 imbalance -> healthy-only autoencoder
-  {
-    const s = newSlide("Approach", "Faults are rare: train on healthy sound only", null,
-      `Healthy:faulty ratios from the clips we used: fan ${(ds.fan.healthy / ds.fan.faulty).toFixed(1)}, pump ${(ds.pump.healthy / ds.pump.faulty).toFixed(1)}, slider ${(ds.slider.healthy / ds.slider.faulty).toFixed(1)}, valve ${(ds.valve.healthy / ds.valve.faulty).toFixed(1)}; overall ${(nH / nF).toFixed(1)}. Only ${Math.round((100 * nF) / nAll)}% of clips are faulty. A classifier needs many labelled faults; an autoencoder needs none.`);
-    txt(s, "Healthy clips for every faulty clip", 0.6, 1.55, 5.6, 0.35, { fontSize: 18, bold: true, color: P.navy });
-    s.addChart(pres.charts.BAR, [{ name: "Ratio", labels: MACH.map((m) => m[0].toUpperCase() + m.slice(1)), values: MACH.map((m) => +(ds[m].healthy / ds[m].faulty).toFixed(1)) }],
-      chartBase({ x: 0.5, y: 1.9, w: 5.8, h: 2.9, barDir: "col", chartColors: [P.blue, P.blue, P.blue, P.amber], showLegend: false, showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "0.0", valAxisMinVal: 0, valAxisMaxVal: 10, barGapWidthPct: 55 }));
-    const bx = 6.8;
-    [[`${Math.round((100 * nF) / nAll)}% of clips are faulty`, `${fmt(nF)} faulty vs ${fmt(nH)} healthy. In real plants, labelled faults are usually even rarer.`],
-     ["A classifier needs many faults", "An autoencoder needs none: it learns what healthy sound looks like."],
-     ["A faulty sound is copied badly", "The copy error is the anomaly score. No faulty clip is used in training."]].forEach((b, i) => {
-      txt(s, b[0], bx, 1.6 + i * 1.07, 5.9, 0.4, { fontSize: 18, bold: true, color: P.navy });
-      txt(s, b[1], bx, 2.02 + i * 1.07, 5.9, 0.6, { fontSize: 15, color: P.ink });
-    });
-    // pipeline
-    const steps = ["Sound clip (10 s)", "Log-mel picture", "Autoencoder (healthy only)", "Copy error = score", "Above 95th percentile = alarm"];
-    const pw = 2.2, pg = (12.1 - 5 * pw) / 4;
+    const s = newSlide("Method", "From waveform to model input", null,
+      "Every model sees the same sound but a different view. The dense network sees five neighbouring time frames flattened into a vector. The CAE sees the whole 2-second picture. AST uses its own spectrogram front end. One detail matters for honesty: we split by whole clip before cutting windows, so no clip appears in both training and test.");
+    sub(s, "Audio preprocessing pipeline");
+    const steps = [["10 s clip", "microphone 1 of 8"], ["2 s windows", "1 s step"], ["Log-mel", "128 bands, FFT 1024, hop 512"], ["Picture", "128 mel x 64 frames"]];
+    const pw = 2.55, pg = (12.1 - 4 * pw) / 3;
     steps.forEach((t, i) => {
       const x = 0.6 + i * (pw + pg);
-      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: 5.15, w: pw, h: 1.15, fill: { color: i === 2 ? P.blue : P.light }, line: { color: i === 2 ? P.blue : P.line, width: 1 }, rectRadius: 0.1, objectName: "Pipeline " + (i + 1) });
-      s.addText(t, { x: x + 0.1, y: 5.15, w: pw - 0.2, h: 1.15, fontSize: 15, bold: i === 2, color: i === 2 ? P.white : P.ink, align: "center", valign: "middle", margin: 0, isTextBox: true });
-      if (i < 4) s.addShape(pres.shapes.RIGHT_ARROW, { x: x + pw + pg * 0.1, y: 5.6, w: pg * 0.8, h: 0.3, fill: { color: P.slate }, line: { color: P.slate, width: 0 }, objectName: "Arrow " + (i + 1) });
+      card(s, x, 1.95, pw, 1.15, P.light);
+      txt(s, t[0], x + 0.15, 2.05, pw - 0.3, 0.45, { fontSize: 18, bold: true, color: P.navy, align: "center", valign: "middle" });
+      txt(s, t[1], x + 0.15, 2.52, pw - 0.3, 0.5, { fontSize: 13, color: P.mute, align: "center" });
+      if (i < 3) s.addShape(pres.shapes.RIGHT_ARROW, { x: x + pw + pg * 0.1, y: 2.4, w: pg * 0.8, h: 0.3, fill: { color: P.slate }, line: { color: P.slate, width: 0 }, objectName: "Arrow " + (i + 1) });
     });
-    source(s, "Counts from the MIMII paper, Table 1, for the IDs we used.");
+    txt(s, "What each model receives", 0.6, 3.35, 12.1, 0.35, { fontSize: 18, bold: true, color: P.navy });
+    const cards = [["Dense AE", "640 numbers", "5 neighbouring frames, flattened. Each mel band is standardised with the train mean and spread.", P.blue], ["CAE", "128 x 64 x 1", "The whole picture. Min-max scaled to 0 to 1, with numbers from the train set only.", P.amber], ["AST embeddings", "1024 x 128", "The model's own spectrogram front end. The network is frozen: it only reads.", P.slate]];
+    const cw = (12.1 - 0.6) / 3;
+    cards.forEach((c, i) => {
+      const x = 0.6 + i * (cw + 0.3);
+      card(s, x, 3.8, cw, 2.1);
+      s.addShape(pres.shapes.OVAL, { x: x + 0.2, y: 3.98, w: 0.22, h: 0.22, fill: { color: c[3] }, line: { color: c[3], width: 0 }, objectName: "Model colour " + (i + 1) });
+      txt(s, c[0], x + 0.55, 3.92, cw - 0.75, 0.35, { fontSize: 16, bold: true, color: P.navy, valign: "middle" });
+      txt(s, c[1], x + 0.2, 4.35, cw - 0.4, 0.6, { fontSize: 28, bold: true, color: P.navy, valign: "middle" });
+      txt(s, c[2], x + 0.2, 5.0, cw - 0.4, 0.85, { fontSize: 14 });
+    });
+    card(s, 0.6, 6.05, 12.1, 0.55, "EAF2FA");
+    txt(s, "We split by whole clip before cutting windows: no clip is ever in two sets.", 0.85, 6.05, 11.6, 0.55, { fontSize: 16, bold: true, color: P.navy, valign: "middle" });
   }
 
-  // ================================================================= MODELS
-  const MODELS = {
-    dense: {
-      section: "Model 1: Dense autoencoder", chip: "MODEL 1  |  DENSE AUTOENCODER",
-      headMetrics: "Good on three machines, weak on valve", headRuns: "Every run: where it works and where it fails",
-      headConf: "Valve misses faults, pump raises alarms", headCurves: "Clean training, good ranking on 3 of 4",
-      headMist: "Above the paper, but valve still misses 80%",
-      runsNote: "Hardest: valve (all four IDs). Fan id_00 ranks well (AUC 0.86) but catches only 28% of faults at our threshold. Easiest: fan id_02, fan id_06, pump id_04, slider id_00 (AUC above 0.99).",
-      confNote: "Valve: 80% of faults are missed. Pump: 24% of healthy clips raise a false alarm. Fan, slider: fewer than 10% false alarms.",
-      notesMetrics: "Mean over 16 runs. AUC 0.913 vs published 0.816 (not an exact match). Balanced accuracy 0.769, recall 0.644, false alarms 10.6%. Valve recall is only 0.196.",
-      notesRuns: "Each cell is one run. Source results_dense.csv.", notesConf: "Rows are true class. Counts below the percent.",
-      notesCurves: "Average train loss falls from 0.55 to 0.24; validation loss ends about 0.06 higher than train. ROC: fan, pump, slider curves bow towards top-left; valve is closest to the diagonal.",
-      notesMist: "Missed faults / false alarms per machine from the confusion matrices. Right chart: ours vs the published dense autoencoder at 6 dB for the same IDs.",
-    },
-    cae: { section: "Model 2: Convolutional autoencoder", chip: "MODEL 2  |  CONVOLUTIONAL AUTOENCODER (CAE)", curveBlank: "Loss curves" },
-    ast: { section: "Model 3: AST embeddings", chip: "MODEL 3  |  PRETRAINED AST EMBEDDINGS", curveBlank: "Score distributions" },
-    sup: { section: "Model 4: Supervised CNN", chip: "MODEL 4  |  SUPERVISED CNN", curveBlank: "Loss and accuracy curves" },
-  };
-  const blank = (m) => Object.assign({ notesMetrics: "Blank until results arrive.", notesRuns: "Blank until results arrive.", notesConf: "Blank until results arrive.", notesCurves: "Blank until results arrive.", notesMist: "Blank until results arrive.", curvesTitle: "Curves" }, m);
-  ["cae", "ast", "sup"].forEach((k) => (MODELS[k] = blank(MODELS[k])));
-  ["cae", "ast", "sup"].forEach((k) => { if (D[k]) Object.assign(MODELS[k], autoText(D[k])); });
+  // ---------- 5 scoring paradigm
+  {
+    const s = newSlide("Method", "Score = how far from healthy", null,
+      "A model trained only on healthy sound should reproduce it well and reproduce faults badly. We turn that into a score per window and average per clip. The threshold comes only from healthy validation clips, so about 5% of healthy clips raise a false alarm by design. Faulty clips are used only for testing.");
+    sub(s, "Unsupervised anomaly scoring");
+    txt(s, "Test scores, divided by each run's threshold", 0.6, 1.95, 7.0, 0.35, { fontSize: 18, bold: true, color: P.navy });
+    const H = Dn.scorehist;
+    s.addChart(pres.charts.BAR, [
+      { name: "Healthy clips", labels: H.labels, values: H.healthy.map((v) => +(100 * v).toFixed(1)) },
+      { name: "Faulty clips", labels: H.labels, values: H.faulty.map((v) => +(100 * v).toFixed(1)) },
+    ], chartBase({ x: 0.5, y: 2.3, w: 7.2, h: 4.3, barDir: "col", chartColors: [P.green, P.red], showLegend: true, legendPos: "b", catAxisLabelFontSize: 10, catAxisLabelFrequency: 2, valAxisMinVal: 0,
+      showCatAxisTitle: true, catAxisTitle: "Score / threshold (1.0 = alarm line)", showValAxisTitle: true, valAxisTitle: "Share of clips (%)", catAxisTitleFontSize: 12, valAxisTitleFontSize: 12,
+      catAxisTitleColor: P.mute, valAxisTitleColor: P.mute, catAxisTitleFontFace: FONT, valAxisTitleFontFace: FONT, barGapWidthPct: 15 }));
+    const steps = ["Train on healthy clips only", "Score each window: copy error (autoencoders) or distance to healthy (embeddings)", "Clip score = average of its windows", "Alarm if above the 95th percentile of healthy validation scores"];
+    steps.forEach((t, i) => {
+      const y = 2.0 + i * 0.95;
+      dot(s, 8.1, y + 0.1, i + 1, P.blue, 0.5);
+      txt(s, t, 8.8, y, 3.9, 0.75, { fontSize: 15, valign: "middle" });
+    });
+    card(s, 8.1, 5.85, 4.6, 0.75, "EAF2FA");
+    txt(s, "About 5% of healthy clips alarm by design. Faulty clips only test the model.", 8.25, 5.85, 4.3, 0.75, { fontSize: 13, color: P.navy, valign: "middle" });
+    source(s, "Dense autoencoder, 16 runs, strict blocked split. The last bin holds scores of 3.75 and above.");
+  }
 
-  // ---------- Model 1 architecture
-  archSlide(MODELS.dense, {
-    title: "Dense autoencoder: 2.7 million parameters",
-    notes: "Fully connected network, no convolution. It takes 5 neighbouring log-mel columns (5 x 128 = 640 numbers), squeezes them to 16 numbers and rebuilds them. 2,710,992 parameters in total.",
+  // ---------- 6-8 models
+  pres.addSection({ title: "Models" }); SEC["Models"] = true;
+  modelSlide({
+    section: "Models", D: Dn, title: "Dense autoencoder: the baseline", sub: "Architecture 1: 5 frames flattened to 640 numbers",
+    notes: "This is the benchmark family from the MIMII paper. Flattening turns a small time-frequency patch into a vector, so the network has no notion that neighbouring bands or frames are related, and it sees only about 0.2 seconds at a time. In theory that is a weakness. In practice it scored 0.913 AUC under our strictest split, above the published baseline of 0.816. Theory and data disagree here, and that is worth discussing.",
     bars: [640, 1024, 512, 256, 128, 16, 128, 256, 512, 1024, 640].map((v, i) => ({ label: String(v), size: v, kind: i === 0 || i === 10 ? "io" : i === 5 ? "lat" : "hid" })),
     groups: [{ name: "Input", from: 0, to: 0 }, { name: "Encoder", from: 1, to: 4, cap: "Dense + BatchNorm + ReLU" }, { name: "Latent space", from: 5, to: 5 }, { name: "Decoder", from: 6, to: 9, cap: "Dense + BatchNorm + ReLU" }, { name: "Reconstruction", from: 10, to: 10 }],
-    stats: [[fmt(PARAMS.dense[0]), "parameters (" + fmt(PARAMS.dense[1]) + " trainable)"], ["640 numbers", "input: 5 columns x 128 mel bands"], ["16 numbers", "latent space (the bottleneck)"], ["Healthy only", "Adam 1e-3, early stopping"]],
+    paramValue: (PARAMS.dense[0] / 1e6).toFixed(1) + "M", paramLabel: "parameters (" + (PARAMS.dense[1] / 1e6).toFixed(2) + "M trainable)",
+    hypo: "Flattening discards the 2-D layout: neighbouring bands and frames become unrelated inputs.",
+    observed: `AUC ${f3(Dn.kpi.auc)}, pAUC ${f3(Dn.kpi.pauc)} on the strict blocked split. Above the published baseline (0.816).`,
+    src: "16 runs, 6 dB, IDs 00, 02, 04, 06. Published baseline: MIMII paper dense autoencoder, all IDs.",
   });
-  metricsSlide(MODELS.dense, D.dense);
-  runsSlide(MODELS.dense, D.dense);
-  confusionSlide(MODELS.dense, D.dense);
-  curvesSlide(MODELS.dense, D.dense);
-  mistakesSlide(MODELS.dense, D.dense);
-
-  // ---------- transition
-  {
-    const k = D.dense.kpi, pm = D.dense.per_machine;
-    const s = newSlide("Model 1: Dense autoencoder", "Satisfactory, not strong: three more models", null,
-      "Why move on: valve recall is only 0.196, pump has 22% false alarms, balanced accuracy is 0.77. The three new models test different ideas: convolution (CAE), pretrained knowledge (AST), and labelled faults (supervised).");
-    const kw = (12.1 - 0.6) / 3;
-    kpi(s, 0.6, 1.6, kw, 1.3, (100 - D.dense.mistakes.valve.missed_pct).toFixed(1) + "%", "of valve faults caught", P.red);
-    kpi(s, 0.6 + kw + 0.3, 1.6, kw, 1.3, (D.dense.mistakes.pump.false_alarm_pct).toFixed(1) + "%", "of healthy pump clips flagged", P.amber);
-    kpi(s, 0.6 + 2 * (kw + 0.3), 1.6, kw, 1.3, f3(k.bal_acc), "balanced accuracy (16 runs)", P.navy);
-    const cards = [
-      ["2", "Convolutional autoencoder", "Looks at the whole picture with filters. The architecture our project specification asks for."],
-      ["3", "Pretrained AST embeddings", "A transformer pretrained on AudioSet. No training here: we measure distance to healthy."],
-      ["4", "Supervised CNN", "Learns from healthy and faulty clips, with augmentation. Not healthy-only: a separate experiment."],
-    ];
-    cards.forEach((c, i) => {
-      const x = 0.6 + i * (kw + 0.3);
-      card(s, x, 3.3, kw, 3.25);
-      s.addShape(pres.shapes.OVAL, { x: x + 0.25, y: 3.55, w: 0.62, h: 0.62, fill: { color: P.blue }, line: { color: P.blue, width: 0 }, objectName: "Model number " + c[0] });
-      s.addText(c[0], { x: x + 0.25, y: 3.55, w: 0.62, h: 0.62, fontSize: 22, bold: true, color: P.white, align: "center", valign: "middle", margin: 0, isTextBox: true });
-      txt(s, c[1], x + 1.0, 3.55, kw - 1.2, 0.62, { fontSize: 18, bold: true, color: P.navy, valign: "middle" });
-      txt(s, c[2], x + 0.25, 4.4, kw - 0.5, 1.4, { fontSize: 15 });
-      const dd = D[["cae", "ast", "sup"][i]], have = !!dd, quick = have && dd.protocol.split === "random-quick";
-      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x + 0.25, y: 5.85, w: 1.85, h: 0.34, fill: { color: have && !quick ? "D5F0E3" : "FDEBD0" }, rectRadius: 0.08, objectName: "Status tag" });
-      s.addText(quick ? "QUICK RUN ONLY" : have ? "RESULTS IN" : "RESULTS PENDING", { x: x + 0.25, y: 5.85, w: 1.85, h: 0.34, fontSize: 11, bold: true, color: have && !quick ? "1D6B47" : "7A4B00", align: "center", valign: "middle", margin: 0, isTextBox: true });
-    });
-    source(s, "Dense autoencoder: 6 dB, strict blocked split. Valve and pump figures are pooled over all test clips.");
-  }
-
-  // ---------- Model 2 CAE
   const cs = [[128, 64, 1], [64, 32, 32], [32, 16, 64], [16, 8, 128], [8, 4, 256], 32, [8, 4, 256], [16, 8, 128], [32, 16, 64], [64, 32, 32], [128, 64, 16], [128, 64, 1]];
-  archSlide(MODELS.cae, {
-    title: "CAE: 1.3 million parameters",
-    notes: "Follows the project specification: 4 strided conv blocks (32, 64, 128, 256 filters) with BatchNorm and LeakyReLU(0.2), flatten, Dense(32) bottleneck, mirrored transposed conv blocks (128, 64, 32, 16), sigmoid output. No skip connections. 1,315,297 parameters; fewer than the dense model because convolution filters are shared.",
+  modelSlide({
+    section: "Models", D: Cn, title: "Convolutional autoencoder", sub: "Architecture 2: shared filters over time and frequency",
+    notes: "Convolution shares filters across the picture, so a pattern is learned once and detected anywhere, and it needs fewer parameters than the dense network. We expected it to beat dense. It did not: 0.889 on a random split, and 0.836 versus 0.887 for dense on the same two IDs. Two caveats: it never converged within the 60-epoch cap, and its normalisation differs from the dense model. We did not test which factor matters.",
     bars: cs.map((v, i) => ({ label: Array.isArray(v) ? "(" + v.join(",") + ")" : String(v), size: Array.isArray(v) ? v[0] * v[1] * v[2] : v, kind: i === 0 || i === 11 ? "io" : i === 5 ? "lat" : "hid" })),
     groups: [{ name: "Input", from: 0, to: 0 }, { name: "Encoder", from: 1, to: 4, cap: "Conv 3x3, stride 2 + BatchNorm + LeakyReLU" }, { name: "Latent", from: 5, to: 5 }, { name: "Decoder", from: 6, to: 10, cap: "Transposed conv 3x3, stride 2 + BatchNorm + LeakyReLU" }, { name: "Output", from: 11, to: 11 }],
-    stats: [[fmt(PARAMS.cae[0]), "parameters (" + fmt(PARAMS.cae[1]) + " trainable)"], ["128 x 64 picture", "input: mel bands x time frames"], ["32 numbers", "latent space (the bottleneck)"], ["No skip links", "sigmoid output, healthy only"]],
+    paramValue: (PARAMS.cae[0] / 1e6).toFixed(1) + "M", paramLabel: "parameters (" + (PARAMS.cae[1] / 1e6).toFixed(2) + "M trainable)",
+    hypo: "Shared filters capture local time-frequency patterns anywhere in the picture, with fewer parameters.",
+    observed: `AUC ${f3(Cn.kpi.auc)} (random split). IDs 00 + 02: ${f3(sameC.auc)} vs dense ${f3(sameD.auc)}. Ran to the 60-epoch cap in all runs.`,
+    src: "16 runs, 6 dB. Random split: not strict. No skip connections; sigmoid output; 32-number bottleneck.",
   });
-  metricsSlide(MODELS.cae, D.cae); runsSlide(MODELS.cae, D.cae); confusionSlide(MODELS.cae, D.cae); curvesSlide(MODELS.cae, D.cae); mistakesSlide(MODELS.cae, D.cae);
-
-  // ---------- Model 3 AST
-  archSlide(MODELS.ast, {
-    title: "AST embeddings: 86 million frozen parameters",
-    notes: "Audio Spectrogram Transformer pretrained on AudioSet (MIT/ast-finetuned-audioset-10-10-0.4593). We do not train it. Each clip becomes a 768-number embedding; the anomaly score is the Mahalanobis distance (shrinkage covariance) to the healthy training embeddings. 86,187,264 parameters.",
-    bars: [{ label: "(1024,128)", size: 131072, kind: "io" }, { label: "(1212,768)", size: 930816, kind: "hid" }, { label: "12 blocks (1212,768)", size: 930816, kind: "hid" }, { label: "768", size: 768, kind: "lat" }, { label: "1 score", size: 4, kind: "io" }],
-    groups: [{ name: "Log-mel input", from: 0, to: 0, cap: "1024 frames x 128 mel" }, { name: "Patch embedding", from: 1, to: 1, cap: "1212 patches" }, { name: "Frozen transformer", from: 2, to: 2, cap: "12 attention blocks" }, { name: "Embedding", from: 3, to: 3, cap: "pooled, 768 numbers" }, { name: "Score", from: 4, to: 4, cap: "Mahalanobis distance to healthy" }],
-    stats: [["86.2 million", "parameters, all frozen"], ["768 numbers", "embedding per clip"], ["Mahalanobis", "distance to healthy embeddings"], ["Healthy only", "no training, no faulty clips"]],
+  modelSlide({
+    section: "Models", D: An, title: "Pretrained AST embeddings", sub: "Architecture 3: no reconstruction, only distance to healthy",
+    notes: "An autoencoder can over-generalise and reconstruct faults almost as well as healthy sound. A pretrained embedding sidesteps that: we never reconstruct, we only measure distance to healthy clips. It did well on slider and pump, 0.99 and 0.96 AUC, but failed on fan ID 00 at 0.56, and valve recall stayed at 0.20. This was a quick run on two IDs, so treat it as indicative.",
+    bars: [{ label: "(1024,128)", size: 131072, kind: "io" }, { label: "(1212,768)", size: 930816, kind: "hid" }, { label: "12 blocks", size: 930816, kind: "hid" }, { label: "768", size: 768, kind: "lat" }, { label: "1 score", size: 4, kind: "io" }],
+    groups: [{ name: "Spectrogram", from: 0, to: 0, cap: "1024 frames x 128 mel" }, { name: "Patch embedding", from: 1, to: 1, cap: "1212 patches" }, { name: "Frozen transformer", from: 2, to: 2, cap: "12 attention blocks" }, { name: "Embedding", from: 3, to: 3, cap: "768 numbers per clip" }, { name: "Score", from: 4, to: 4, cap: "Mahalanobis distance to healthy" }],
+    paramValue: (PARAMS.ast[0] / 1e6).toFixed(1) + "M", paramLabel: "parameters, all frozen (no training)",
+    hypo: "No reconstruction, so no over-generalisation: a clip is judged by its distance to healthy clips.",
+    observed: `AUC ${f3(An.kpi.auc)} (quick run, IDs 00 + 02). Slider ${f2(An.per_machine.slider.auc)}, pump ${f2(An.per_machine.pump.auc)}; fan ID 00 only 0.56.`,
+    src: "Quick run: 8 runs, up to 150 clips per class, random split. Headline: pooled embedding + Mahalanobis (chosen before running).",
   });
-  metricsSlide(MODELS.ast, D.ast); runsSlide(MODELS.ast, D.ast); confusionSlide(MODELS.ast, D.ast); curvesSlide(MODELS.ast, D.ast); mistakesSlide(MODELS.ast, D.ast);
 
-  // ---------- Model 4 supervised
-  archSlide(MODELS.sup, {
-    title: "Supervised CNN: 24 thousand parameters",
-    notes: "Small CNN: three Conv + BatchNorm + ReLU + MaxPool blocks (16, 32, 64 filters), global average pooling, dropout 0.3, one sigmoid output (chance of faulty). 23,809 parameters. Trained on healthy AND faulty clips: a different experiment from the other three. Augmentation: volume +/- 2 dB, light noise, small time shift.",
-    bars: [{ label: "(128,64,1)", size: 8192, kind: "io" }, { label: "(64,32,16)", size: 32768, kind: "hid" }, { label: "(32,16,32)", size: 16384, kind: "hid" }, { label: "(16,8,64)", size: 8192, kind: "hid" }, { label: "64", size: 64, kind: "lat" }, { label: "1", size: 2, kind: "io" }],
-    groups: [{ name: "Input", from: 0, to: 0 }, { name: "Conv blocks", from: 1, to: 3, cap: "Conv 3x3 + BatchNorm + ReLU + MaxPool" }, { name: "Pooled", from: 4, to: 4, cap: "global average" }, { name: "Output", from: 5, to: 5, cap: "chance of faulty" }],
-    stats: [[fmt(PARAMS.sup[0]), "parameters (" + fmt(PARAMS.sup[1]) + " trainable)"], ["Healthy + faulty", "trained with labels"], ["Augmentation", "volume, noise, time shift"], ["Dropout 0.3", "sigmoid output"]],
-  });
-  metricsSlide(MODELS.sup, D.sup); runsSlide(MODELS.sup, D.sup); confusionSlide(MODELS.sup, D.sup); curvesSlide(MODELS.sup, D.sup); mistakesSlide(MODELS.sup, D.sup);
-  if (D.sup && D.sup.ablation) {
-    const A = D.sup.ablation, cap = (m) => m[0].toUpperCase() + m.slice(1);
-    const lower = MACH.filter((m) => A[m].auc_aug < A[m].auc_no).length;
-    const s = newSlide(MODELS.sup.section, "Augmentation made no clear difference", MODELS.sup.chip,
-      "Same split and seed; only augmentation changes. Augmentation: volume +/- 2 dB, light noise, small time shift on training data only. Main numbers in this section are the augmented runs (decided before running).");
-    protoTag(s, D.sup);
-    txt(s, "Mean AUC: without vs with augmentation", 0.6, 1.55, 7.4, 0.35, { fontSize: 18, bold: true, color: P.navy });
-    s.addChart(pres.charts.BAR, [
-      { name: "No augmentation", labels: MACH.map(cap), values: MACH.map((m) => +A[m].auc_no.toFixed(3)) },
-      { name: "Augmentation", labels: MACH.map(cap), values: MACH.map((m) => +A[m].auc_aug.toFixed(3)) },
-    ], chartBase({ x: 0.5, y: 1.95, w: 7.6, h: 4.6, barDir: "col", chartColors: [P.slate, P.blue], showLegend: true, legendPos: "b", showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "0.00", valAxisMinVal: 0.4, valAxisMaxVal: 1.05, barGapWidthPct: 55 }));
-    kpi(s, 8.5, 1.65, 4.2, 1.3, `${A.all.auc_no.toFixed(3)} to ${A.all.auc_aug.toFixed(3)}`, "mean AUC, without to with", undefined, 30);
-    kpi(s, 8.5, 3.1, 4.2, 1.3, `${A.all.bal_no.toFixed(3)} to ${A.all.bal_aug.toFixed(3)}`, "balanced accuracy, without to with", undefined, 30);
-    card(s, 8.5, 4.55, 4.2, 2.0);
-    txt(s, `Slightly lower with augmentation on ${lower} of 4 machines. The differences are small, and with one seed they could be chance.`, 8.7, 4.55, 3.8, 2.0, { fontSize: 15, valign: "middle" });
-    source(s, "16 runs per setting, same split and seed. Source: results_sup.csv." + starNote(D.sup));
-  }
-
-  // ---------- comparison
+  // ---------- 9 setup and metrics
+  pres.addSection({ title: "Evaluation" }); SEC["Evaluation"] = true;
   {
-    const s = newSlide("Comparison", "Comparison of all four models", null,
-      "Dense, CAE and supervised: 16 runs (4 machines x 4 IDs, 6 dB). AST: quick run, 8 runs (IDs 00 and 02, up to 150 clips per class, random split). Dense: blocked split (strict). CAE: random split (not strict, can leak recording sessions). Supervised: uses faulty labels; split marked blocked* because the export does not record it. So the table is NOT like for like until the CAE and AST are re-run with a blocked split on all IDs.");
-    const hdr = ["Model", "Type", "Split", "Parameters", "Mean AUC", "pAUC", "Bal. acc.", "Recall", "False alarm"].map((t, i) => ({ text: t, options: { bold: true, color: P.white, fill: { color: P.navy }, align: i < 3 ? "left" : "center", fontSize: 14 } }));
-    const sp = (d) => (d ? (d.protocol.split === "blocked" ? "Blocked" : d.protocol.split === "random" ? "Random" : d.protocol.split === "random-quick" ? "Random (quick)" : "Blocked*") : "—");
-    const defs = [["1  Dense autoencoder", "Healthy only", PARAMS.dense[0], D.dense], ["2  Convolutional AE (CAE)", "Healthy only", PARAMS.cae[0], D.cae], ["3  AST embeddings", "Healthy only, frozen", PARAMS.ast[0], D.ast], ["4  Supervised CNN", "Uses faulty labels", PARAMS.sup[0], D.sup]];
-    const rows = [hdr];
-    defs.forEach((d) => {
-      const k = d[3] ? d[3].kpi : null;
-      const c = (v) => ({ text: v, options: { align: "center", fontSize: 14, color: k ? P.ink : P.slate, bold: !!k } });
-      const warn = d[3] && d[3].protocol.split !== "blocked";
-      rows.push([{ text: d[0], options: { bold: true, fontSize: 14, color: P.ink } }, { text: d[1], options: { fontSize: 14, color: P.mute } },
-        { text: sp(d[3]), options: { fontSize: 14, bold: !!d[3], color: warn ? "7A4B00" : P.ink, fill: warn ? { color: "FDEBD0" } : undefined } }, c(fmt(d[2])),
-        c(k ? f3(k.auc) : "—"), c(k ? f3(k.pauc) : "—"), c(k ? f3(k.bal_acc) : "—"), c(k ? f3(k.recall) : "—"), c(k ? pc(k.false_alarm) : "—")]);
+    const s = newSlide("Evaluation", "16 runs, one model each, two kinds of split", null,
+      "AUC measures ranking over all thresholds. pAUC restricts to low false-alarm rates, which is what a plant would tolerate. The split matters enormously: clips from one recording session share noise, so a random split can leak that session into training. A blocked split, cutting by file order, is stricter. My guess is that file order follows recording time, but I have not verified that.");
+    sub(s, "Experimental setup and evaluation metrics");
+    s.addImage({ path: IMG("roc_pauc.png"), x: 0.6, y: 1.95, w: 5.3, h: (5.3 * 3.3) / 5.6, altText: "ROC curve with the region of false alarms up to 10% shaded" });
+    card(s, 0.6, 5.2, 5.3, 1.4);
+    txt(s, [
+      { text: "16 runs: 4 machines x 4 IDs, one model per run", options: { bullet: true, breakLine: true } },
+      { text: "Healthy clips: 70% train, 10% validation, 20% test", options: { bullet: true, breakLine: true } },
+      { text: "All faulty clips are in the test set", options: { bullet: true } },
+    ], 0.8, 5.28, 5.0, 1.25, { fontSize: 14, valign: "middle", paraSpaceAfter: 2 });
+    const mx = 6.4;
+    [["AUC", "ranking quality over all thresholds. 0.5 = guess, 1.0 = perfect."], ["pAUC", "the same, but only for false alarms up to 10% (the shaded strip). 0.5 = guess."], ["Also", "recall, false-alarm rate and balanced accuracy at the 95th-percentile threshold."]].forEach((m, i) => {
+      const y = 1.95 + i * 0.62;
+      txt(s, [{ text: m[0] + ": ", options: { bold: true, color: P.navy } }, { text: m[1], options: {} }], mx, y, 6.3, 0.58, { fontSize: 14, valign: "middle" });
     });
-    s.addTable(rows, { x: 0.6, y: 1.55, w: 12.1, colW: [2.7, 1.9, 1.3, 1.4, 1.1, 0.9, 1.0, 0.9, 0.9], rowH: 0.5, border: { type: "solid", color: P.line, pt: 0.75 }, valign: "middle", margin: [0, 0.1, 0, 0.1] });
-    txt(s, "Mean AUC per machine", 0.6, 4.2, 6.0, 0.35, { fontSize: 16, bold: true, color: P.navy });
-    const have = [["Dense (blocked)", D.dense, P.blue], ["CAE (random)", D.cae, P.sky], ["AST (quick run)", D.ast, P.slate], ["Supervised (blocked*)", D.sup, P.amber]].filter((h) => h[1]);
-    const cap = (m) => m[0].toUpperCase() + m.slice(1);
-    s.addChart(pres.charts.BAR, have.map((h) => ({ name: h[0], labels: MACH.map(cap), values: MACH.map((m) => +h[1].per_machine[m].auc.toFixed(3)) })),
-      chartBase({ x: 0.5, y: 4.5, w: 6.4, h: 2.15, barDir: "col", chartColors: have.map((h) => h[2]), showLegend: true, legendPos: "r", legendFontSize: 11, showValue: false, valAxisMinVal: 0.4, valAxisMaxVal: 1.0, valAxisMajorUnit: 0.2, catAxisLabelFontSize: 11, barGapWidthPct: 40 }));
-    card(s, 7.2, 4.2, 5.5, 2.4);
-    txt(s, "Not like for like yet", 7.4, 4.3, 5.1, 0.4, { fontSize: 18, bold: true, color: P.navy });
-    const mins = D.cae ? Math.round(D.cae.total_minutes) : 0;
-    txt(s, `Dense used a strict blocked split. The CAE used a random split, and the AST is a quick run (IDs 00 and 02, up to 150 clips per class, random split). Random splits can leak recording sessions and flatter the score. For a fair comparison, re-run the CAE with SPLIT_MODE = "blocked" (about ${mins} minutes on Kaggle) and the AST on all IDs.`, 7.4, 4.75, 5.1, 1.8, { fontSize: 14 });
-    source(s, "AST: quick run, 8 runs (IDs 00 and 02 only). *Supervised split is the notebook default; the export does not record it. Supervised uses faulty clips in training.");
+    txt(s, "How the healthy clips are split", mx, 3.9, 6.3, 0.35, { fontSize: 18, bold: true, color: P.navy });
+    const N = 24, cx0 = 7.8, cw = 4.9 / N;
+    const randTest = [3, 8, 13, 18, 22], randVal = [6, 15];
+    const colorOf = (kind) => ({ T: P.blue, V: P.amber, E: P.green }[kind]);
+    const rowFor = (y, label, kindAt) => {
+      txt(s, label, mx, y, 1.3, 0.4, { fontSize: 14, bold: true, valign: "middle" });
+      for (let i = 0; i < N; i++) s.addShape(pres.shapes.RECTANGLE, { x: cx0 + i * cw, y, w: cw - 0.025, h: 0.4, fill: { color: colorOf(kindAt(i)) }, line: { color: P.white, width: 0 }, objectName: label + " clip " + (i + 1) });
+    };
+    rowFor(4.35, "Random", (i) => (randTest.includes(i) ? "E" : randVal.includes(i) ? "V" : "T"));
+    rowFor(4.9, "Blocked", (i) => (i < 17 ? "T" : i < 19 ? "V" : "E"));
+    [["Train", P.blue], ["Validation", P.amber], ["Test", P.green]].forEach((l, i) => {
+      s.addShape(pres.shapes.RECTANGLE, { x: cx0 + i * 1.6, y: 5.5, w: 0.2, h: 0.2, fill: { color: l[1] }, line: { color: l[1], width: 0 }, objectName: "Legend " + l[0] });
+      txt(s, l[0], cx0 + i * 1.6 + 0.3, 5.45, 1.2, 0.3, { fontSize: 12, valign: "middle" });
+    });
+    txt(s, "Random: test clips sit between training clips of the same recording session, which can leak it. Blocked: test clips come from a later stretch of files.", mx, 5.85, 6.3, 0.75, { fontSize: 13, color: P.mute });
+    source(s, "Threshold = 95th percentile of healthy validation scores; faulty clips never set it. Blocked split: first 70% of files train, next 10% validation, last 20% test.");
   }
 
-  // ---------- next steps (with icons)
+  // ---------- 10 comparison
   {
-    const s = newSlide("Next steps", "Next steps: time, attention, pretraining", null,
-      "These follow from the results: valve faults are short events, so temporal and attention models and pretrained knowledge are the natural next experiments. Outlier exposure is what the best published systems add.");
-    const fa = require("react-icons/fa");
-    const items = [
-      ["LSTM and GRU", "Read the sound column by column and remember what came before. Good for short events.", "FaStream"],
-      ["Attention and transformers", "Let the model focus on the few moments that matter, such as a valve click.", "FaBullseye"],
-      ["Pretrained image models", "Transfer learning: reuse networks trained on millions of pictures, on spectrograms.", "FaImage"],
-      ["Fine-tuning", "Adapt a pretrained audio model (AST, BEATs) to each machine with a little training.", "FaSlidersH"],
-      ["Outlier exposure", "The best published systems add extra training signal, such as other machines' sound.", "FaClone"],
-      ["Smarter scoring", "Score by the worst windows, not the average, and tune thresholds per machine.", "FaBalanceScale"],
+    const s = newSlide("Evaluation", "No clean winner: the protocol matters", null,
+      "Here are the numbers, with the caveat on the slide. Dense used the strict split and still led. CAE and AST used easier splits and did not beat it. On identical IDs the gap narrows to 0.012 between dense and AST. So I will not claim a winner. What I can say: none of the sophisticated alternatives clearly beat the simple baseline, and all models beat the published reference.");
+    sub(s, "Quantitative comparison");
+    const hdr = ["Model", "Split", "Runs", "Parameters", "AUC", "pAUC", "Bal. acc.", "Recall", "False alarm"].map((t, i) => ({ text: t, options: { bold: true, color: P.white, fill: { color: P.navy }, align: i < 2 ? "left" : "center", fontSize: 14 } }));
+    const rows = [hdr];
+    [["Dense autoencoder", Dn, PARAMS.dense[0], "Blocked (strict)"], ["Convolutional AE (CAE)", Cn, PARAMS.cae[0], "Random"], ["AST embeddings", An, PARAMS.ast[0], "Random, quick run"]].forEach((d) => {
+      const k = d[1].kpi, warn = d[1].protocol.split !== "blocked", c = (v) => ({ text: v, options: { align: "center", fontSize: 14, color: P.ink, bold: true } });
+      rows.push([{ text: d[0], options: { bold: true, fontSize: 14, color: P.ink } }, { text: d[3], options: { fontSize: 14, bold: true, color: warn ? "7A4B00" : P.ink, fill: warn ? { color: "FDEBD0" } : undefined } },
+        c(String(d[1].n_runs)), c(fmt(d[2])), c(f3(k.auc)), c(f3(k.pauc)), c(f3(k.bal_acc)), c(f3(k.recall)), c(pc(k.false_alarm))]);
+    });
+    const g = (v) => ({ text: v, options: { align: "center", fontSize: 14, color: P.mute } });
+    rows.push([{ text: "Published dense AE (MIMII paper)", options: { fontSize: 14, color: P.mute, italic: true } }, { text: "Paper protocol", options: { fontSize: 14, color: P.mute } }, g("all IDs"), g("—"), g("0.816"), g("—"), g("—"), g("—"), g("—")]);
+    s.addTable(rows, { x: 0.6, y: 1.9, w: 12.1, colW: [2.9, 2.0, 0.8, 1.5, 0.9, 0.9, 1.0, 0.9, 1.2], rowH: 0.45, border: { type: "solid", color: P.line, pt: 0.75 }, valign: "middle", margin: [0, 0.1, 0, 0.1] });
+    txt(s, "Mean AUC per machine", 0.6, 4.3, 6.2, 0.35, { fontSize: 16, bold: true, color: P.navy });
+    s.addChart(pres.charts.BAR, SERIES.map((h) => ({ name: h[0], labels: MACH.map(cap1), values: MACH.map((m) => +h[1].per_machine[m].auc.toFixed(3)) })),
+      chartBase({ x: 0.5, y: 4.6, w: 6.5, h: 2.05, barDir: "col", chartColors: SERIES.map((h) => h[2]), showLegend: true, legendPos: "r", legendFontSize: 11, showValue: false, valAxisMinVal: 0.4, valAxisMaxVal: 1.0, valAxisMajorUnit: 0.2, catAxisLabelFontSize: 11, barGapWidthPct: 40 }));
+    card(s, 7.3, 4.3, 5.4, 2.3);
+    txt(s, "Same 8 runs only (IDs 00 + 02)", 7.5, 4.36, 5.0, 0.35, { fontSize: 16, bold: true, color: P.navy });
+    const mh = ["Model", "AUC", "pAUC", "Bal. acc."].map((t, i) => ({ text: t, options: { bold: true, color: P.white, fill: { color: P.navy }, align: i ? "center" : "left", fontSize: 12 } }));
+    const mc = (v, b) => ({ text: v, options: { align: "center", fontSize: 12, bold: !!b, color: P.ink } });
+    s.addTable([mh,
+      [{ text: "Dense (blocked)", options: { fontSize: 12, bold: true } }, mc(f3(sameD.auc), 1), mc(f3(sameD.pauc)), mc(f3(sameD.bal))],
+      [{ text: "CAE (random)", options: { fontSize: 12, bold: true } }, mc(f3(sameC.auc), 1), mc(f3(sameC.pauc)), mc(f3(sameC.bal))],
+      [{ text: "AST (quick run)", options: { fontSize: 12, bold: true } }, mc(f3(sameA.auc), 1), mc(f3(sameA.pauc)), mc(f3(sameA.bal))],
+      [{ text: "Published (paper)", options: { fontSize: 12, italic: true, color: P.mute } }, mc(f3(sameD.pub)), mc("—"), mc("—")],
+    ], { x: 7.5, y: 4.75, w: 5.0, colW: [2.2, 0.9, 0.9, 1.0], rowH: 0.31, border: { type: "solid", color: P.line, pt: 0.75 }, valign: "middle", margin: [0, 0.08, 0, 0.08] });
+    txt(s, "Different splits: not strictly comparable.", 7.5, 6.35, 5.0, 0.25, { fontSize: 12, bold: true, color: "7A4B00" });
+    source(s, "Dense, CAE: 16 runs. AST: quick run, 8 runs. Amber split cells = not the strict protocol. Published: MIMII paper, 6 dB average over 7 IDs.");
+  }
+
+  // ---------- 11 visual error analysis
+  {
+    const s = newSlide("Evaluation", "Where the models disagree", null,
+      "Overlaying the ROC curves shows the pattern: on slider and pump the models are close, on valve all three sit near the diagonal at low false-alarm rates. The t-SNE shows whether faulty clips form their own region or sit inside the healthy cloud. For fan, they sit inside it. I would stress that t-SNE is illustrative only; distances in it are not evidence of separability.");
+    sub(s, "ROC per machine and latent space");
+    txt(s, [{ text: "● ", options: { color: P.blue, bold: true } }, { text: "Dense (blocked)    ", options: {} }, { text: "● ", options: { color: P.amber, bold: true } }, { text: "CAE (random)    ", options: {} }, { text: "● ", options: { color: P.slate, bold: true } }, { text: "AST (quick run)", options: {} }], 6.2, 1.4, 6.5, 0.35, { fontSize: 13, align: "right" });
+    const pos = [[0.5, 1.95], [4.5, 1.95], [0.5, 4.25], [4.5, 4.25]];
+    MACH.forEach((m, i) => {
+      const [x, y] = pos[i];
+      txt(s, cap1(m), x + 0.1, y, 3.8, 0.3, { fontSize: 15, bold: true, color: P.navy });
+      const xs = Dn.roc.fpr;
+      s.addChart(pres.charts.SCATTER, [{ name: "fpr", values: xs }, { name: "Dense", values: Dn.roc[m] }, { name: "CAE", values: Cn.roc[m] }, { name: "AST", values: An.roc[m] }, { name: "Chance", values: xs }],
+        chartBase({ x, y: y + 0.28, w: 4.0, h: 1.9, chartColors: [P.blue, P.amber, P.slate, P.line], lineSize: 2, lineDataSymbol: "none", showLegend: false,
+          valAxisMinVal: 0, valAxisMaxVal: 1, valAxisMajorUnit: 0.5, catAxisMinVal: 0, catAxisMaxVal: 1, catAxisMajorUnit: 0.5, valAxisLabelFormatCode: "0.0", catAxisLabelFormatCode: "0.0",
+          catAxisLabelFontSize: 10, valAxisLabelFontSize: 10, valGridLine: { color: "E3E8EE", size: 0.75 }, catGridLine: { color: "E3E8EE", size: 0.75 } }));
+    });
+    s.addImage({ path: IMG("tsne_fan02.png"), x: 8.95, y: 1.95, w: 3.75, h: (3.75 * 3.9) / 4.0, altText: "t-SNE of AST embeddings for fan ID 02: faulty clips lie among healthy clips" });
+    txt(s, "t-SNE of AST embeddings, fan ID 02 (local recordings, 1,375 clips). Faulty clips sit inside the healthy cloud. Illustrative only.", 8.95, 5.7, 3.75, 0.9, { fontSize: 12, color: P.mute });
+    source(s, "ROC: x = false alarm rate, y = faults caught; averaged over each machine's runs. The t-SNE uses local fan recordings, not the Kaggle run.");
+  }
+
+  // ---------- 12 trade-offs and failure cases
+  {
+    const s = newSlide("Evaluation", "Accuracy versus cost, and where it fails", null,
+      "The cheapest model, dense, was also the strongest, which is an engineering argument for the baseline. AST costs 86 million parameters but needs no training. The failure cases are consistent: valve faults are short events, and my hypothesis, untested, is that averaging over a window hides them. Fan ID 00 ranks well yet catches only 28% of faults at our threshold. Latency per clip I have not measured, so I will not claim it.");
+    sub(s, "Engineering trade-offs and failure cases");
+    const mins = (D) => (D.total_minutes / D.n_runs).toFixed(1);
+    const ep = (D) => { const e = D.runs.map((r) => r.epochs); return Math.min(...e) === Math.max(...e) ? `${Math.min(...e)} epochs` : `${Math.min(...e)} to ${Math.max(...e)} epochs`; };
+    const th = (t) => ({ text: t, options: { bold: true, color: P.white, fill: { color: P.navy }, align: t === "Model" ? "left" : "center", fontSize: 13 } });
+    const tc = (t, o) => ({ text: t, options: Object.assign({ align: "center", fontSize: 13, color: P.ink }, o || {}) });
+    s.addTable([
+      [th("Model"), th("Parameters"), th("Training per run"), th("Latency per clip")],
+      [{ text: "Dense AE", options: { bold: true, fontSize: 13 } }, tc((PARAMS.dense[0] / 1e6).toFixed(1) + "M"), tc(mins(Dn) + " min (" + ep(Dn) + ")"), tc("not measured", { color: P.mute })],
+      [{ text: "CAE", options: { bold: true, fontSize: 13 } }, tc((PARAMS.cae[0] / 1e6).toFixed(1) + "M"), tc(mins(Cn) + " min (" + ep(Cn) + ", the cap)"), tc("not measured", { color: P.mute })],
+      [{ text: "AST", options: { bold: true, fontSize: 13 } }, tc((PARAMS.ast[0] / 1e6).toFixed(1) + "M, frozen"), tc("none (embedding pass only)"), tc("not measured", { color: P.mute })],
+    ], { x: 0.6, y: 1.95, w: 6.1, colW: [1.1, 1.5, 2.4, 1.1], rowH: [0.45, 0.62, 0.62, 0.62], border: { type: "solid", color: P.line, pt: 0.75 }, valign: "middle", margin: [0, 0.08, 0, 0.08] });
+    card(s, 0.6, 4.6, 6.1, 2.0, "EAF2FA");
+    txt(s, [
+      { text: "The cheapest model was also the strongest.", options: { bold: true, color: P.navy, breakLine: true } },
+      { text: `AST is ${Math.round(PARAMS.ast[0] / PARAMS.dense[0])} times larger than dense and needs no training, but did not score higher. The CAE never stopped early: it may be undertrained.`, options: {} },
+    ], 0.8, 4.6, 5.7, 2.0, { fontSize: 15, valign: "middle" });
+    const fan0 = (D) => D.runs.find((r) => r.machine === "fan" && r.id === "id_00");
+    const cards = [
+      ["Valve", `Recall ${f2(Dn.per_machine.valve.recall)} (dense), ${f2(Cn.per_machine.valve.recall)} (CAE), ${f2(An.per_machine.valve.recall)} (AST). Hypothesis, untested: short events are averaged away.`],
+      ["Fan ID 00", `Dense AUC ${f2(fan0(Dn).auc)} but recall ${f2(fan0(Dn).recall)}. AST AUC ${f2(fan0(An).auc)}.`],
+      ["Pump false alarms", `Dense: ${Dn.mistakes.pump.false_alarm_pct.toFixed(0)}% of healthy pump clips raise an alarm.`],
+      ["Split and noise", `Supervised quick runs: balanced accuracy 0.86 random vs 0.71 blocked. Published AUC falls 0.82 to 0.64 from 6 to -6 dB; we ran 6 dB only.`],
     ];
-    const cw = (12.1 - 0.6) / 3, ch = 2.35;
-    for (let i = 0; i < items.length; i++) {
-      const col = i % 3, row = Math.floor(i / 3);
-      const x = 0.6 + col * (cw + 0.3), y = 1.65 + row * (ch + 0.3);
-      card(s, x, y, cw, ch);
-      s.addShape(pres.shapes.OVAL, { x: x + 0.25, y: y + 0.25, w: 0.75, h: 0.75, fill: { color: P.blue }, line: { color: P.blue, width: 0 }, objectName: "Icon circle " + (i + 1) });
-      const Comp = fa[items[i][2]] || fa.FaCircle;
-      s.addImage({ data: await icon(Comp, P.white), x: x + 0.42, y: y + 0.42, w: 0.41, h: 0.41, altText: items[i][0] + " icon" });
-      txt(s, items[i][0], x + 1.2, y + 0.25, cw - 1.4, 0.75, { fontSize: 18, bold: true, color: P.navy, valign: "middle" });
-      txt(s, items[i][1], x + 0.25, y + 1.15, cw - 0.5, 1.1, { fontSize: 14 });
+    cards.forEach((c, i) => {
+      const x = 7.0 + (i % 2) * 2.95, y = 1.95 + Math.floor(i / 2) * 2.35;
+      card(s, x, y, 2.75, 2.2);
+      txt(s, c[0], x + 0.15, y + 0.12, 2.45, 0.35, { fontSize: 16, bold: true, color: P.navy });
+      txt(s, c[1], x + 0.15, y + 0.52, 2.45, 1.6, { fontSize: 13 });
+    });
+    source(s, "Latency was not measured. Training time: dense 26 to 66 epochs with early stopping; CAE always reached the 60-epoch cap.");
+  }
+
+  // ---------- 13 conclusion
+  pres.addSection({ title: "Conclusion" }); SEC["Conclusion"] = true;
+  {
+    const s = newSlide("Conclusion", "Strong baseline, honest evaluation", null,
+      "Three takeaways. A simple dense autoencoder is a strong baseline. The architectural improvements we expected did not appear in our measurements, and two of our three runs used easier splits, so the honest next step is to re-run them under the strict protocol on all IDs. And evaluation design, random versus blocked splitting, changed results as much as architecture did. Next I would test temporal models, attention, and fine-tuning pretrained audio models, especially for valve.");
+    sub(s, "Conclusion and future work");
+    const finds = [`Dense AE: ${f3(Dn.kpi.auc)} AUC under the strictest split`, "No clear gain from convolution or embeddings (yet)", `Valve unsolved: recall at most ${f2(Cn.per_machine.valve.recall)}`, "Evaluation design changed results as much as architecture"];
+    txt(s, "What we found", 0.6, 1.9, 5.8, 0.35, { fontSize: 18, bold: true, color: P.navy });
+    finds.forEach((t, i) => {
+      const y = 2.35 + i * 1.0;
+      card(s, 0.6, y, 5.8, 0.88);
+      dot(s, 0.8, y + 0.17, i + 1, P.blue, 0.5);
+      txt(s, t, 1.5, y, 4.75, 0.88, { fontSize: 15, valign: "middle" });
+    });
+    txt(s, "Next steps", 6.8, 1.9, 5.9, 0.35, { fontSize: 18, bold: true, color: P.navy });
+    const fa = require("react-icons/fa");
+    const nexts = [["Re-run CAE and AST with blocked splits on all IDs", "FaRedo"], ["LSTM and GRU: remember what came before", "FaStream"], ["Attention and transformers: focus on short events", "FaBullseye"], ["Fine-tune pretrained audio and image models", "FaSlidersH"], ["Outlier exposure (used by the best published systems)", "FaClone"], ["Score by the worst windows, not the average", "FaBalanceScale"]];
+    for (let i = 0; i < nexts.length; i++) {
+      const y = 2.35 + i * 0.66;
+      s.addShape(pres.shapes.OVAL, { x: 6.8, y, w: 0.5, h: 0.5, fill: { color: P.blue }, line: { color: P.blue, width: 0 }, objectName: "Icon circle " + (i + 1) });
+      s.addImage({ data: await icon(fa[nexts[i][1]] || fa.FaCircle, P.white), x: 6.92, y: y + 0.12, w: 0.26, h: 0.26, altText: nexts[i][0] });
+      txt(s, nexts[i][0], 7.5, y, 5.2, 0.5, { fontSize: 14, valign: "middle" });
     }
-    source(s, "Each experiment can reuse the same data, split and metrics, so results stay comparable.");
+    card(s, 0.6, 6.45, 12.1, 0.5, P.light);
+    txt(s, `Also tried: a supervised CNN (uses faulty labels), mean AUC ${f2(Sp.kpi.auc)}; some IDs fall far below chance (valve ID 04: AUC 0.02).`, 0.8, 6.45, 11.7, 0.5, { fontSize: 13, color: P.mute, valign: "middle" });
   }
 
   await pres.writeFile({ fileName: "AcousticSense_Anomaly_Detection.pptx" });
