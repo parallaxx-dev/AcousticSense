@@ -118,7 +118,7 @@
 <p>The main limitation is the unequal protocol: only the dense model used a blocked split. Random splits can leak recording sessions. In a supervised CNN experiment [11], which uses faulty labels and so lies outside the healthy-only setting, balanced accuracy fell from 0.86 (random) to 0.71 (blocked) in quick runs, and one valve unit scored an AUC of 0.02, far below chance. We also used 4 of 7 units, one noise level, a single seed, and measured no latency.</p>
 
 <h2>VII. Conclusion</h2>
-<p>A simple dense autoencoder is a strong baseline for acoustic fault detection on MIMII: 0.913 mean AUC under a strict blocked split. In our runs neither a convolutional autoencoder nor frozen AST embeddings gave a clear gain, although unequal protocols confound the comparison, and valve faults remain unsolved. Next steps are to re-run the CAE and AST models with blocked splits on all units, then to test recurrent and attention-based models, fine-tuned pretrained audio models and outlier exposure [3], and to score by the worst windows instead of their average.</p>
+<p>A simple dense autoencoder is a strong baseline for acoustic fault detection on MIMII: 0.913 mean AUC under a strict blocked split. In our runs neither a convolutional autoencoder nor frozen AST embeddings gave a clear gain, although unequal protocols confound the comparison, and valve faults remain unsolved. Next steps are to re-run the CAE and AST models with blocked splits on all units, then to test recurrent and attention-based models, fine-tuned pretrained audio models and outlier exposure [3], and to score by the worst windows instead of their average. All code, notebooks and results are in the project repository [12].</p>
 
 <h2>References</h2>
 <ol class="refs">
@@ -133,6 +133,7 @@
   <li>N. Kattady, &ldquo;AcousticSense: convolutional autoencoder (v2),&rdquo; Kaggle notebook. <a href="https://www.kaggle.com/code/nirmalkattady/acousticsense-cae-v2">https://www.kaggle.com/code/nirmalkattady/acousticsense-cae-v2</a></li>
   <li>A. Pyarla, &ldquo;AcousticSense: pretrained AST embeddings with Mahalanobis scoring (v1),&rdquo; Kaggle notebook. <a href="https://www.kaggle.com/code/aadityapyarla/acousticsense-ptembeddast-mahalnobis-v1">https://www.kaggle.com/code/aadityapyarla/acousticsense-ptembeddast-mahalnobis-v1</a></li>
   <li>A. Pyarla, &ldquo;AcousticSense: supervised CNN with augmentation (v1),&rdquo; Kaggle notebook. <a href="https://www.kaggle.com/code/aadityapyarla/acousticsense-supervisedcnn-aug-v1">https://www.kaggle.com/code/aadityapyarla/acousticsense-supervisedcnn-aug-v1</a></li>
+  <li>A. Pyarla, R. Kumar, N. Kattady and D. Choudhary, &ldquo;AcousticSense,&rdquo; GitHub repository (notebooks, results, app, report). <a href="https://github.com/parallaxx-dev/AcousticSense">https://github.com/parallaxx-dev/AcousticSense</a></li>
 </ol>
 </section>
 </body>
