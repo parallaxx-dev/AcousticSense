@@ -5,8 +5,8 @@ fan/
 
 node_modules/
 frontend/dist/
-backend/artifacts/model.keras
-backend/artifacts/cae/*/
+models/local/model.keras
+models/cae/*/
 *.zip
 __pycache__/
 .pytest_cache/

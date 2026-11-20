@@ -1,8 +1,8 @@
-"""Build artifacts/cae/registry.json (+ samples.json) from the Kaggle exports.
+"""Build models/cae/registry.json (+ samples.json) from the Kaggle results.
 
 Run from the project root after unzipping the 16 per-machine models:
 
-    unzip dense_models.zip -d backend/artifacts/cae          # model.keras + norm.npz per <machine>_<id>/
+    unzip cae_models_16_units.zip -d models/cae               # model.keras + norm.npz per <machine>_<id>/
     python backend/scripts/build_registry.py --exports results  # reads results/cae/, results/dense/, results/sup/
 
 Thresholds, ROC curves, score distributions, confusion matrices and loss curves all come from the
@@ -19,7 +19,8 @@ import pandas as pd
 from sklearn.metrics import roc_curve
 
 SEED = 42
-HERE = Path(__file__).resolve().parents[1]
+HERE = Path(__file__).resolve().parents[1]          # backend/
+PROJECT = HERE.parent
 
 
 def r(a, n=6):
@@ -29,7 +30,7 @@ def r(a, n=6):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exports", default="results", help="folder holding cae/, dense/, sup/ (the exported Kaggle results)")
-    ap.add_argument("--models", default=str(HERE / "artifacts" / "cae"))
+    ap.add_argument("--models", default=str(PROJECT / "models" / "cae"))
     ap.add_argument("--fan-audio", default="fan", help="fallback: local MIMII fan folder used for sample clips")
     ap.add_argument("--samples", default="data/samples/manifest.json", help="manifest written by fetch_samples.py (preferred)")
     args = ap.parse_args()

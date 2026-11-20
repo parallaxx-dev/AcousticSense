@@ -1,13 +1,13 @@
 """Single source of truth for the audio / model constants.
 
-These mirror `acoustic_anomaly_cae.ipynb` exactly so the served model sees
+These mirror `notebooks/kaggle_2_conv_autoencoder_CAE.ipynb` exactly so the served model sees
 the same features it was trained on.
 """
 from pathlib import Path
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
-ARTIFACTS_DIR = BACKEND_DIR / "artifacts"
 PROJECT_DIR = BACKEND_DIR.parent
+ARTIFACTS_DIR = PROJECT_DIR / "models"          # trained weights and the registry, see models/README.md
 
 # --- audio / spectrogram ---
 SR = 16_000

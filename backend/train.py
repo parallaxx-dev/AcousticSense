@@ -2,7 +2,7 @@
 
     python backend/train.py --data fan/id_02 --epochs 100
 
-Outputs (backend/artifacts/):
+Outputs (models/local/):
     model.keras   trained autoencoder          norm.json    train_min / train_max (dB)
     eval.json     ROC, histograms, confusion matrix, loss curves, threshold, band errors
 Same split (seed 42, 70/10/20 of healthy) and cache signature as the notebook,
@@ -58,7 +58,7 @@ def main():
     ap.add_argument("--data", default="fan/id_02", help="folder with normal/ and abnormal/ (relative to cwd)")
     ap.add_argument("--epochs", type=int, default=100)
     ap.add_argument("--cache", default="data/cache")
-    ap.add_argument("--out", default=str(C.ARTIFACTS_DIR))
+    ap.add_argument("--out", default=str(C.ARTIFACTS_DIR / "local"))
     args = ap.parse_args()
 
     random.seed(SEED); np.random.seed(SEED); tf.keras.utils.set_random_seed(SEED)

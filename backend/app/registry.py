@@ -13,6 +13,7 @@ from . import config as C
 from .detector import ArtifactsMissing, Detector
 
 CAE_DIR = C.ARTIFACTS_DIR / "cae"
+LOCAL_DIR = C.ARTIFACTS_DIR / "local"
 KAGGLE_CONFIG = dict(sr=C.SR, n_fft=C.N_FFT, hop=C.HOP, n_mels=C.N_MELS, window_samples=C.WINDOW_SAMPLES, overlap=C.OVERLAP,
                      T=C.T, latent_dim=C.LATENT_DIM, percentile=C.THRESHOLD_PERCENTILE, params=1315297)
 DEFAULT_ID = "fan_id_02"
@@ -21,7 +22,7 @@ MAX_LOADED = 3
 
 def _local_entry() -> tuple[dict, Path] | None:
     """The model produced by backend/train.py (fan id_02 on the local, un-noised-matched clips)."""
-    d = C.ARTIFACTS_DIR
+    d = LOCAL_DIR
     if not all((d / f).exists() for f in ("model.keras", "norm.json", "eval.json")):
         return None
     ev, norm = json.loads((d / "eval.json").read_text()), json.loads((d / "norm.json").read_text())
@@ -55,7 +56,7 @@ class Registry:
             self.entries[local[0]["id"]], self.paths[local[0]["id"]] = local
         if not self.entries:
             raise ArtifactsMissing(
-                "No models found. Unzip the Kaggle models into backend/artifacts/cae and run "
+                "No models found. Unzip the Kaggle models into models/cae and run "
                 "backend/scripts/build_registry.py, or train one with backend/train.py.")
         self.default_id = DEFAULT_ID if DEFAULT_ID in self.entries else next(iter(self.entries))
         self.samples = self._load_samples()

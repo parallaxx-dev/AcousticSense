@@ -116,7 +116,6 @@ The data comes from the MIMII dataset. We use IDs 00, 02, 04 and 06, the 6 dB co
 backend/
   app/            FastAPI service: audio features, detector, model registry, routes
   scripts/        build_registry.py (CSV exports -> registry), fetch_samples.py (sample clips)
-  artifacts/cae/  registry.json and samples.json (model weights are not committed)
   train.py        train and export one local model
   tests/          API tests
 frontend/         React + TypeScript + Vite app
@@ -128,6 +127,7 @@ notebooks/
   local_dense_and_conv_autoencoder.ipynb the original local notebook
   viz_block.py                           early plotting helper, no longer used by the notebooks
 results/         exported Kaggle results: cae/, dense/, sup/ (CSVs and figures)
+models/          trained weights and the model registry (weights are not committed, see models/README.md)
 presentation/     generates the 13-slide deck (see presentation/README.md)
 report/           the two-page paper: source, figures script and PDF (see report/README.md)
 docs/screenshots/ images used in this README
@@ -142,9 +142,9 @@ You need Python 3.12 or newer, Node 20 or newer, and a TensorFlow-capable machin
 python -m venv .venv && source .venv/bin/activate
 pip install -r backend/requirements.txt
 
-# 2. Models: unzip the 16 trained models and build the registry from the CSV exports.
-#    (The zip is named dense_models.zip but contains the convolutional autoencoders.)
-unzip dense_models.zip -d backend/artifacts/cae
+# 2. Models: put the 16 trained models in models/cae and build the registry from the CSV results.
+#    The weights come from notebook 2 (its outputs_cae/ folder), see models/README.md.
+unzip cae_models_16_units.zip -d models/cae        # your copy of the weights
 python backend/scripts/build_registry.py --exports results
 
 # 3. Optional: sample clips for every machine unit (3 healthy + 3 faulty each, about 235 MB).
@@ -159,7 +159,7 @@ cd backend && uvicorn app.main:app --port 8000
 cd frontend && npm install && npm run dev
 ```
 
-Run the backend tests with `PYTHONPATH=backend pytest backend/tests`. To train the extra local fan id_02 model, run `PYTHONPATH=backend python backend/train.py --data fan/id_02`.
+Run the backend tests with `PYTHONPATH=backend pytest backend/tests`. To train the extra local fan id_02 model, run `PYTHONPATH=backend python backend/train.py --data fan/id_02`. It writes to `models/local/`.
 
 Settings: `API_URL` points the dev proxy at a different backend, `VITE_API_URL` sets the API base URL for a production build, and `CORS_ORIGINS` lists the origins the backend allows.
 
@@ -180,7 +180,7 @@ Settings: `API_URL` points the dev proxy at a different backend, `VITE_API_URL` 
 - **Noise level matters.** The 16 models were trained on 6 dB recordings. Audio recorded at a different noise level, such as the -6 dB clips in a local `fan/` folder, can score high even when healthy.
 - **One model per unit.** A model only knows its own machine unit. Pick the matching machine and unit before analysing.
 - **Comparison columns come from separate Kaggle runs.** Check that they used the same split before reading small gaps as real (see [Model comparison](#model-comparison)). The supervised CNN also saw faulty examples while training, and some of its runs collapsed under a blocked split.
-- **Weights are not in the repo.** Each model is 16 MB, so they are gitignored and rebuilt from the zip as shown above.
+- **Weights are not in the repo.** Each model is 16 MB, so they are gitignored. Get them by running notebook 2 (see `models/README.md`).
 
 ## Report and slides
 
