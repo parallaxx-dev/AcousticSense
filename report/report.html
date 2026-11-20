@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Unsupervised Acoustic Fault Detection on Industrial Machines</title>
+<style>
+  @page { size: letter; margin: 0.5in 0.55in 0.45in 0.55in; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: "Liberation Serif", "Times New Roman", serif; font-size: 8.6pt; line-height: 1.13; color: #111; }
+  .page { column-count: 2; column-gap: 0.24in; column-fill: auto; }
+  .span { column-span: all; }
+  header.span { text-align: center; margin-bottom: 0.05in; }
+  h1 { font-size: 16.5pt; line-height: 1.12; font-weight: bold; margin: 0 0 3pt 0; }
+  .authors { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 0.15in; margin: 5pt 0.2in 3pt 0.2in; }
+  .au { text-align: center; line-height: 1.18; }
+  .au b { display: block; font-size: 10pt; font-weight: bold; }
+  .au span { display: block; font-size: 8.4pt; font-style: italic; color: #333; }
+  .affil { font-size: 8.8pt; color: #111; margin: 2pt 0 5pt 0; }
+  .affil i { color: #333; }
+  .abstract { text-align: justify; margin: 0 0 3pt 0; }
+  .abstract b, .kw b { font-style: italic; }
+  .kw { margin: 0 0 4pt 0; text-align: justify; }
+  p { margin: 0 0 3.2pt 0; text-align: justify; hyphens: auto; }
+  h2 { font-size: 8.5pt; font-variant: small-caps; text-transform: none; letter-spacing: 0.04em; text-align: center; margin: 4pt 0 2pt 0; font-weight: bold; break-after: avoid; }
+  h3 { font-size: 8.7pt; font-style: italic; font-weight: bold; display: inline; margin: 0; }
+  figure { margin: 3pt 0 4pt 0; break-inside: avoid; text-align: center; }
+  figure img { display: block; margin: 0 auto; }
+  figcaption { font-size: 7.4pt; line-height: 1.12; text-align: justify; margin-top: 2pt; }
+  figcaption b { font-weight: bold; }
+  table { border-collapse: collapse; width: 100%; font-size: 7.4pt; margin: 2pt 0 1pt 0; }
+  th, td { padding: 1.2pt 2pt; text-align: center; }
+  th { border-top: 0.9pt solid #000; border-bottom: 0.5pt solid #000; font-weight: bold; }
+  td:first-child, th:first-child { text-align: left; }
+  tr.last td { border-bottom: 0.9pt solid #000; }
+  tr.ref td { color: #444; font-style: italic; }
+  ol.refs a { color: #111; text-decoration: none; word-break: break-all; }
+  .tcap { font-size: 7.4pt; text-align: center; font-variant: small-caps; margin: 3pt 0 1pt 0; break-after: avoid; }
+  ol.refs { font-size: 7.4pt; line-height: 1.1; padding-left: 12pt; margin: 0; }
+  ol.refs li { margin: 0 0 1.4pt 0; text-align: left; }
+  sup { font-size: 6pt; }
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE 1 ============================ -->
+<section class="page">
+<header class="span">
+  <h1>Unsupervised Acoustic Fault Detection on Industrial Machines: Dense, Convolutional and Pretrained-Embedding Models on MIMII</h1>
+  <div class="authors">
+    <div class="au"><b>Aaditya Pyarla</b><span>24BCS003</span></div>
+    <div class="au"><b>Raja Kumar</b><span>24BSM050</span></div>
+    <div class="au"><b>Nirmal Kattady</b><span>24BCS174</span></div>
+    <div class="au"><b>Deepak Choudhary</b><span>24BSM018</span></div>
+  </div>
+  <div class="affil">Indian Institute of Information Technology, Design and Manufacturing, Jabalpur, India<br><i>17 November 2026</i></div>
+</header>
+
+<div class="span abstract"><b>Abstract</b>&mdash;Faults in industrial machines are rare and rarely labelled, so we study acoustic anomaly detection that trains on healthy sound only. On the MIMII dataset (fan, pump, slide rail and valve; four units each, 6&nbsp;dB noise, 18,019 clips) we compare a dense autoencoder (2.71&nbsp;M parameters), a convolutional autoencoder (CAE, 1.32&nbsp;M) and frozen pretrained AST embeddings scored by Mahalanobis distance (86.2&nbsp;M, not trained). The alarm threshold is the 95th percentile of healthy validation scores. Under a strict blocked split the dense autoencoder reaches a mean AUC of 0.913 (pAUC 0.791). The CAE (random split) reaches 0.889 and the embedding model (quick run, two units, random split) 0.875; on the eight runs they share, the three score 0.887, 0.836 and 0.875. Because the evaluation protocols differ, we claim no ranking. Valve faults stay hardest (recall at most 0.33 for every model), and the choice of data split matters as much as the architecture.</div>
+<div class="span kw"><b>Index Terms</b>&mdash;anomaly detection, autoencoder, MIMII, audio embeddings, evaluation protocol</div>
+
+<figure class="span">
+  <img src="figures/fig1_architectures.png" style="width:7.35in" alt="Architectures of the three models">
+  <figcaption><b>Fig. 1.</b> The three models, drawn from the implemented networks. Bar height grows with the number of values at that layer (log scale); labels give the tensor shape. Light blue: input and output; amber: bottleneck or embedding. (a) Dense autoencoder. (b) Convolutional autoencoder. (c) Frozen AST embedding with a distance score.</figcaption>
+</figure>
+
+<h2>I. Introduction</h2>
+<p>Unplanned machine failures are costly, but labelled failure recordings are scarce and the next fault may not resemble earlier ones. One-class anomaly detection therefore learns what healthy sound looks like and flags deviations, never using faulty clips for training. In our data only 18% of clips are faulty: 4.5 healthy clips per faulty clip overall, and 8.2 and 7.7 for pump and valve. The MIMII baseline is a small dense autoencoder [1]; its average AUC at 6&nbsp;dB is 0.816, against 0.844 for convolutional deep one-class networks [2]. The best DCASE 2020 systems add outlier exposure and reach 94.86% average AUC on the development set [3].</p>
+<p>We ask whether (i) convolution, which respects the time&ndash;frequency layout that flattening discards, or (ii) pretrained embeddings, which avoid reconstruction altogether, improve on a simple dense baseline. Our contributions are a common pipeline for three architectures, an explicit comparison of random and blocked data splits, and an account of where each model fails.</p>
+
+<h2>II. Data and Preprocessing</h2>
+<p>MIMII [1], which we used through its Kaggle copy [8], holds 10&nbsp;s, 16&nbsp;kHz recordings of four machine types, seven units (IDs) each, with factory noise mixed in at three signal-to-noise ratios. We use IDs 00, 02, 04 and 06, the 6&nbsp;dB condition and microphone 1 of 8: 18,019 clips (14,719 healthy, 3,300 faulty), 56% of the 32,157 clips at one noise level. Each clip is cut into 2.05&nbsp;s windows with 50% overlap and converted to a 128&times;64 log-Mel picture (FFT 1024, hop 512, 128 bands). Healthy clips are split 70/10/20% into train, validation and test sets <i>by clip, before windowing</i>; all faulty clips go to the test set. Scaling constants come from the training set only.</p>
+<p>Two split modes are used. A <i>random</i> split draws clips at random. A <i>blocked</i> split cuts clips in file order (first 70% train, next 10% validation, last 20% test). We assume, without having verified it, that file order follows recording time, so that blocked testing separates recording sessions.</p>
+
+<h2>III. Models</h2>
+<p><h3>A. Dense autoencoder.</h3> Five consecutive frames (5&times;128&nbsp;=&nbsp;640 values, each band standardised) pass through dense layers 1024&ndash;512&ndash;256&ndash;128&ndash;16 and back (BatchNorm, ReLU), 2.71&nbsp;M parameters (Fig.&nbsp;1a). Flattening treats neighbouring bands and frames as unrelated inputs, and the model sees only about 0.2&nbsp;s at a time.</p>
+<p><h3>B. Convolutional autoencoder.</h3> Following the project specification, four stride-2 convolution blocks (32&ndash;256 filters; BatchNorm, LeakyReLU 0.2) feed a 32-unit dense bottleneck, mirrored by four transposed-convolution blocks and a sigmoid output (1.32&nbsp;M parameters, no skip connections; Fig.&nbsp;1b). Inputs are min-max scaled and training uses &plusmn;2&nbsp;dB random gain. Shared filters should capture local patterns anywhere in the picture with fewer parameters.</p>
+<p><h3>C. AST embeddings.</h3> A frozen Audio Spectrogram Transformer [4] pretrained on AudioSet (our notebook: [9]) turns each clip into a 768-number pooled embedding (Fig.&nbsp;1c). The anomaly score is the Mahalanobis distance to the healthy training embeddings, with a Ledoit&ndash;Wolf shrinkage covariance [5] because a few hundred healthy clips must cover 768 dimensions. Nothing is trained, and the headline configuration (pooled embedding, Mahalanobis) was fixed before running. The model avoids reconstruction, and with it the risk that an autoencoder rebuilds faults almost as well as healthy sound.</p>
+<p><h3>D. Training and scoring.</h3> The autoencoders use Adam (10<sup>&minus;3</sup>) with early stopping (patience 10) on validation loss, capped at 100 epochs (dense) and 60 (CAE). A window's score is its mean squared error and a clip's score is the mean over its windows. For every model the alarm threshold is the 95th percentile of healthy validation clip scores, so about 5% of healthy clips raise a false alarm by design; faulty clips never influence it.</p>
+
+<h2>IV. Evaluation Protocol</h2>
+<p>We report AUC, partial AUC (pAUC, false-alarm rate up to 0.1, standardised so that 0.5 is chance [6]) and, at the threshold, recall, false-alarm rate and balanced accuracy. The dense model was tested with the blocked split (16 runs: 4 machines&times;4 IDs). The CAE used a random split (16 runs). The AST model is a quick run on IDs 00 and 02 with at most 150 clips per class and a random split (8 runs). <b>The results are therefore not like for like.</b></p>
+
+
+<h2>V. Results</h2>
+<div class="tcap">Table I. Mean results over runs (6 dB)</div>
+<table>
+  <tr><th>Model</th><th>Split</th><th>Runs</th><th>AUC</th><th>pAUC</th><th>Bal. acc.</th><th>Recall</th><th>False al.</th></tr>
+  <tr><td>Dense AE</td><td>blocked</td><td>16</td><td>0.913</td><td>0.791</td><td>0.769</td><td>0.644</td><td>10.6%</td></tr>
+  <tr><td>CAE</td><td>random</td><td>16</td><td>0.889</td><td>0.776</td><td>0.781</td><td>0.621</td><td>5.9%</td></tr>
+  <tr><td>AST (quick)</td><td>random</td><td>8</td><td>0.875</td><td>0.742</td><td>0.760</td><td>0.629</td><td>10.8%</td></tr>
+  <tr class="last ref"><td>Published AE [2]</td><td>paper</td><td>all IDs</td><td>0.816</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td></tr>
+</table>
+<p style="font-size:7.4pt; margin-bottom:4pt">Blocked = strict split. Recall and false alarm at the 95th-percentile threshold. Same eight runs (IDs 00 and 02): dense 0.887, AST 0.875, CAE 0.836, published 0.786 (AUC).</p>
+
+<p>Under the strictest protocol the dense autoencoder obtains the highest mean AUC (0.913) and pAUC (0.791), above the published baseline. The CAE has the best balanced accuracy (0.781) and fewest false alarms (5.9%), but a lower AUC (0.889) even on an easier split. On the eight runs shared by all models the mean AUC is 0.887 (dense), 0.875 (AST) and 0.836 (CAE), against 0.786 for the published baseline.</p>
+
+<figure>
+  <img src="figures/fig2_auc_per_machine.png" style="width:3.4in" alt="Mean AUC per machine">
+  <figcaption><b>Fig. 2.</b> Mean AUC per machine. The split used by each model is shown in the legend; the AST bars cover IDs 00 and 02 only. The dotted line is chance.</figcaption>
+</figure>
+
+<p>Per machine (Fig.&nbsp;2), all models separate slider almost perfectly (0.96&ndash;0.99). AST is strongest on pump (0.956 versus 0.944 dense and 0.809 CAE) but weakest on fan (0.698), where fan ID 00 gives only 0.56. Valve is hardest for every model: recall at the threshold is 0.20 (dense), 0.33 (CAE) and 0.20 (AST), and the dense model misses 80% of valve faults. The ROC curves (Fig.&nbsp;3) approach the diagonal at low false-alarm rates on valve. The dense model also flags 24% of healthy pump clips.</p>
+
+<figure>
+  <img src="figures/fig3_roc.png" style="width:3.4in" alt="ROC curves per machine">
+  <figcaption><b>Fig. 3.</b> ROC curves per machine, averaged over runs: dense (blue), CAE (amber), AST (grey). The thin vertical line marks the 10% false-alarm limit of the pAUC.</figcaption>
+</figure>
+
+<h2>VI. Discussion and Limitations</h2>
+<p>Neither convolution nor pretrained embeddings clearly improved on the dense baseline, and we did not test why. Plausible but untested factors are: (i) the CAE reached its 60-epoch cap in all 16 runs, so early stopping never fired and it may be undertrained; (ii) the CAE uses one global min-max range whereas the dense model standardises each band; (iii) the dense model scores many short groups of frames, which may expose short events that a 32-number bottleneck over a 2&nbsp;s picture averages away, a possible reason for the low valve recall.</p>
+
+<figure>
+  <img src="figures/fig4_tsne_fan02.png" style="width:1.75in" alt="t-SNE of AST embeddings, fan ID 02">
+  <figcaption><b>Fig. 4.</b> t-SNE [7] of AST embeddings of fan ID 02 (local recordings, 1,375 clips). Faulty clips (red) lie inside the healthy cloud (green), in line with the weak AST result on fan. Three clusters appear whose cause we have not identified, so the plot is illustrative only.</figcaption>
+</figure>
+
+<p>The main limitation is the unequal protocol: only the dense model used a blocked split. Random splits can leak recording sessions. In a supervised CNN experiment [10], which uses faulty labels and so lies outside the healthy-only setting, balanced accuracy fell from 0.86 (random) to 0.71 (blocked) in quick runs, and one valve unit scored an AUC of 0.02, far below chance. We also used 4 of 7 units, one noise level, a single seed, and measured no latency.</p>
+
+<h2>VII. Conclusion</h2>
+<p>A simple dense autoencoder is a strong baseline for acoustic fault detection on MIMII: 0.913 mean AUC under a strict blocked split. In our runs neither a convolutional autoencoder nor frozen AST embeddings gave a clear gain, although unequal protocols confound the comparison, and valve faults remain unsolved. Next steps are to re-run the CAE and AST models with blocked splits on all units, then to test recurrent and attention-based models, fine-tuned pretrained audio models and outlier exposure [3], and to score by the worst windows instead of their average.</p>
+
+<h2>References</h2>
+<ol class="refs">
+  <li>H. Purohit <i>et al.</i>, &ldquo;MIMII dataset: Sound dataset for malfunctioning industrial machine investigation and inspection,&rdquo; in <i>Proc. DCASE Workshop</i>, 2019, arXiv:1909.09347.</li>
+  <li>&ldquo;Audio-based anomaly detection in industrial machines using deep one-class support vector data description,&rdquo; arXiv:2412.10792, 2024.</li>
+  <li>Y. Zhang <i>et al.</i>, &ldquo;Outlier-aware inlier modeling and multi-scale scoring for anomalous sound detection via multitask learning,&rdquo; in <i>Proc. Interspeech</i>, 2023, arXiv:2309.07500.</li>
+  <li>Y. Gong, Y.-A. Chung and J. Glass, &ldquo;AST: Audio Spectrogram Transformer,&rdquo; in <i>Proc. Interspeech</i>, 2021.</li>
+  <li>O. Ledoit and M. Wolf, &ldquo;A well-conditioned estimator for large-dimensional covariance matrices,&rdquo; <i>J. Multivariate Anal.</i>, vol. 88, no. 2, 2004.</li>
+  <li>D. K. McClish, &ldquo;Analyzing a portion of the ROC curve,&rdquo; <i>Med. Decis. Making</i>, vol. 9, no. 3, 1989.</li>
+  <li>L. van der Maaten and G. Hinton, &ldquo;Visualizing data using t-SNE,&rdquo; <i>J. Mach. Learn. Res.</i>, vol. 9, 2008.</li>
+  <li>&ldquo;MIMII dataset,&rdquo; Kaggle dataset (copy of [1]). <a href="https://www.kaggle.com/datasets/bisheshgiri/mimii-dataset">https://www.kaggle.com/datasets/bisheshgiri/mimii-dataset</a></li>
+  <li>A. Pyarla, &ldquo;AcousticSense: pretrained AST embeddings with Mahalanobis scoring (v1),&rdquo; Kaggle notebook. <a href="https://www.kaggle.com/code/aadityapyarla/acousticsense-ptembeddast-mahalnobis-v1">https://www.kaggle.com/code/aadityapyarla/acousticsense-ptembeddast-mahalnobis-v1</a></li>
+  <li>A. Pyarla, &ldquo;AcousticSense: supervised CNN with augmentation (v1),&rdquo; Kaggle notebook. <a href="https://www.kaggle.com/code/aadityapyarla/acousticsense-supervisedcnn-aug-v1">https://www.kaggle.com/code/aadityapyarla/acousticsense-supervisedcnn-aug-v1</a></li>
+</ol>
+</section>
+</body>
+</html>
